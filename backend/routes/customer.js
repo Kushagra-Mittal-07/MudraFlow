@@ -21,7 +21,7 @@ const router = express.Router();
 
 // Customer authentication required for all customer routes
 router.use((req, res, next) => {
-  if (req.path.startsWith('/staff') || req.path.startsWith('/auth')) {
+  if (req.path.startsWith('/staff') || req.path.startsWith('/auth') || req.path.startsWith('/branches') || req.path.startsWith('/health')) {
     return next();
   }
   requireAuth('customer')(req, res, next);

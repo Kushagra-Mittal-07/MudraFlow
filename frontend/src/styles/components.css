@@ -549,7 +549,23 @@
   padding: 0 12px;
 }
 
-/* Mobile stacked card view (< 640px) */
+/* Responsive sidebar (< 1024px) */
+@media (max-width: 1023px) {
+  .mf-sidebar {
+    transform: translateX(-100%) !important;
+  }
+  .mf-sidebar.mf-sidebar-open {
+    transform: translateX(0) !important;
+  }
+  .mf-main-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  .mf-home-col-left,
+  .mf-home-col-right {
+    grid-column: span 12 !important;
+  }
+}
 .mf-mobile-only {
   display: none;
 }

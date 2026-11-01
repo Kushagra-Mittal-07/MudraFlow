@@ -78,7 +78,7 @@ router.post('/auth/login', asyncHandler(async (req, res) => {
 
   // Fetch customer row
   const [[customer]] = await pool.query(
-    `SELECT customer_id, password_hash, failed_attempts, locked_until FROM customer WHERE customer_id = ?`,
+    `SELECT customer_id, full_name, password_hash, failed_attempts, locked_until FROM customer WHERE customer_id = ?`,
     [customer_id]
   );
 
@@ -154,7 +154,11 @@ router.post('/auth/login', asyncHandler(async (req, res) => {
 
   return res.json({
     ok: true,
-    data: { token, customer_id: customer.customer_id }
+    data: {
+      token,
+      customer_id: customer.customer_id,
+      full_name: customer.full_name
+    }
   });
 }));
 
