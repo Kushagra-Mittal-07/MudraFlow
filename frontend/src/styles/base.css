@@ -1,0 +1,112 @@
+/* =============================================================================
+   MudraFlow Base Styles
+   Spec: spec/05-ui.md Section 1, 2, 10, 11
+   ============================================================================= */
+
+@import './tokens.css';
+@import './components.css';
+
+/* Self-hosted fonts via @fontsource */
+@import '@fontsource/playfair-display/600.css';
+@import '@fontsource/playfair-display/700.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Typography elements */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--green-700);
+  text-decoration: none;
+  transition: color 120ms ease, text-decoration 120ms ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+input, select, textarea {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--ink);
+  background-color: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--green-900);
+  outline: 2px solid var(--green-900);
+  outline-offset: 1px;
+}
+
+/* Mono figures and tabular numbers */
+.tabular-nums, code, kbd, samp, pre {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Accessible focus visible */
+:focus-visible {
+  outline: 2px solid var(--green-900);
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

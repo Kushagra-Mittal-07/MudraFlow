@@ -1,0 +1,52 @@
+/* =============================================================================
+   MudraFlow Design Tokens
+   Spec: spec/05-ui.md Section 2
+   ============================================================================= */
+
+:root {
+  /* Greens */
+  --green-950: #16382A;   /* staff sidebar, dark bands, big IDs */
+  --green-900: #1F4D3A;   /* customer sidebar, primary button, accent bars */
+  --green-700: #2F6B50;   /* links, hover on light backgrounds */
+  --green-100: #DDE9E1;   /* selected tile / selected row tint */
+
+  /* Paper */
+  --page:     #F1F6F2;    /* background of every page */
+  --paper:    #FFFFFF;    /* panels, slips, inputs */
+  --paper-2:  #E9EFEA;    /* table header/footer bands, ID boxes, chips */
+
+  /* Lines */
+  --line:        #D6DDD7;
+  --line-strong: #B9C4BC;
+
+  /* Ink */
+  --ink:   #121512;
+  --ink-2: #4A544D;
+  --ink-3: #66706A;       /* muted, still 5:1 on white */
+
+  /* Money */
+  --credit:   #17613F;
+  --debit:    #B3261E;
+  --debit-bg: #FBEAE8;
+
+  /* Stamps */
+  --amber:      #7A5A08;
+  --amber-bg:   #FBF3D9;
+  --amber-line: #C79A21;
+  --gold:       #C9A227;  /* focus ring on dark surfaces, STAFF tag */
+
+  /* Type */
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans:  'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:  'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Shape and space (4px base) */
+  --radius: 2px;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
+  --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+
+  --sidebar-w: 248px;
+  --topbar-h: 64px;
+  --content-max: 1200px;
+}
+
