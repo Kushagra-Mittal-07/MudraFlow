@@ -52,8 +52,21 @@ app.use((err, req, res, next) => {
       msg = 'Email already registered';
     } else if (err.message && err.message.includes('customer.pan')) {
       msg = 'PAN already registered';
+    } else if (err.message && err.message.includes('customer.phone')) {
+      msg = 'Phone number already registered';
     } else if (err.message && err.message.includes('uq_beneficiary_cust_acc')) {
       msg = 'Beneficiary already exists for this account';
+    }
+    return res.status(400).json({ ok: false, message: msg });
+  }
+
+  // Handle data too long for column
+  if (err.code === 'ER_DATA_TOO_LONG') {
+    let msg = 'Submitted value exceeds allowed column length';
+    if (err.message && err.message.includes('phone')) {
+      msg = 'Mobile number must be exactly 10 digits';
+    } else if (err.message && err.message.includes('pan')) {
+      msg = 'PAN must be exactly 10 characters';
     }
     return res.status(400).json({ ok: false, message: msg });
   }

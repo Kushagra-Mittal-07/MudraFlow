@@ -63,6 +63,36 @@ export function Register() {
       setError('Please fill in all required personal details');
       return;
     }
+
+    // Clean phone number (strip leading 0 or +91)
+    let cleanPhone = String(formData.phone).replace(/\D/g, '');
+    if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = cleanPhone.slice(1);
+    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) cleanPhone = cleanPhone.slice(2);
+    if (cleanPhone.length !== 10) {
+      setError('Mobile number must be exactly 10 digits');
+      return;
+    }
+
+    // Clean PAN
+    const cleanPan = String(formData.pan).trim().toUpperCase();
+    if (cleanPan.length !== 10) {
+      setError('PAN must be exactly 10 characters (e.g. ABCDE1234F)');
+      return;
+    }
+
+    // Age validation (18 or older)
+    const birthDate = new Date(formData.dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    if (age < 18) {
+      setError('You must be at least 18 years old to open an account');
+      return;
+    }
+
     if (!formData.opening_amount || parseFloat(formData.opening_amount) < 1000) {
       setError('Minimum opening deposit is ₹1,000.00');
       return;
@@ -88,12 +118,17 @@ export function Register() {
     setError('');
 
     try {
+      let cleanPhone = String(formData.phone).replace(/\D/g, '');
+      if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = cleanPhone.slice(1);
+      if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) cleanPhone = cleanPhone.slice(2);
+      const cleanPan = String(formData.pan).trim().toUpperCase();
+
       const payload = {
-        full_name: formData.full_name,
+        full_name: formData.full_name.trim(),
         dob: formData.dob,
-        pan: formData.pan.toUpperCase(),
-        phone: formData.phone,
-        email: formData.email,
+        pan: cleanPan,
+        phone: cleanPhone,
+        email: formData.email.trim(),
         address: formData.address || 'Standard Address',
         account_type: formData.account_type,
         branch_id: parseInt(formData.branch_id),
@@ -221,8 +256,12 @@ export function Register() {
                     mono
                     required
                     value={formData.pan}
-                    onChange={(e) => handleChange('pan', e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+                      handleChange('pan', val);
+                    }}
                     placeholder="e.g. ABCDE1234F"
+                    maxLength={10}
                   />
                 </div>
               </div>
@@ -236,8 +275,14 @@ export function Register() {
                     mono
                     required
                     value={formData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/\D/g, '');
+                      if (val.length === 11 && val.startsWith('0')) val = val.slice(1);
+                      if (val.length > 10) val = val.slice(0, 10);
+                      handleChange('phone', val);
+                    }}
                     placeholder="e.g. 9876543210"
+                    maxLength={10}
                   />
                   <Field
                     label="Email Address"

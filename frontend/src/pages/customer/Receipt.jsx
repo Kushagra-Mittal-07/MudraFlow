@@ -145,3 +145,4 @@ export function Receipt() {
 }
 
 export default Receipt;
+

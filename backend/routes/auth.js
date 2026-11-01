@@ -31,6 +31,24 @@ router.post('/auth/register', asyncHandler(async (req, res) => {
     return res.status(400).json({ ok: false, message: 'Invalid OTP' });
   }
 
+  // Clean and sanitize phone (strip non-digits, leading +91 or 0, ensure exactly 10 digits)
+  let cleanPhone = String(phone || '').replace(/\D/g, '');
+  if (cleanPhone.length > 10) {
+    cleanPhone = cleanPhone.slice(-10); // Take last 10 digits for 093... or +9193...
+  }
+  if (cleanPhone.length < 10) {
+    cleanPhone = cleanPhone.padStart(10, '0');
+  }
+
+  // Clean and sanitize PAN (ensure max 10 chars so CHAR(10) never overflows)
+  let cleanPan = String(pan || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cleanPan.length > 10) {
+    cleanPan = cleanPan.slice(0, 10);
+  }
+  if (cleanPan.length === 0) {
+    return res.status(400).json({ ok: false, message: 'PAN is required' });
+  }
+
   // Hash the password with bcrypt
   const passwordHash = await bcrypt.hash(password, 10);
 
@@ -39,7 +57,18 @@ router.post('/auth/register', asyncHandler(async (req, res) => {
   try {
     await conn.query(
       `CALL sp_register_customer(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @out_cid, @out_acc)`,
-      [full_name, dob, email, phone, pan, address, passwordHash, account_type, branch_id, opening_amount]
+      [
+        full_name ? full_name.trim() : '',
+        dob,
+        email ? email.trim() : '',
+        cleanPhone,
+        cleanPan,
+        address ? address.trim() : '',
+        passwordHash,
+        account_type,
+        branch_id,
+        opening_amount
+      ]
     );
     const [[result]] = await conn.query('SELECT @out_cid AS customer_id, @out_acc AS account_number');
 
