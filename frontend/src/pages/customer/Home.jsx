@@ -31,7 +31,7 @@ export function Home() {
   const [openBranchId, setOpenBranchId] = useState('1');
   const [openFundingAccId, setOpenFundingAccId] = useState('');
   const [openAmount, setOpenAmount] = useState('2000');
-  const [openPassword, setOpenPassword] = useState('Demo@123');
+  const [openPassword, setOpenPassword] = useState('');
   const [openLoading, setOpenLoading] = useState(false);
   const [openError, setOpenError] = useState('');
   const [openSuccessReceipt, setOpenSuccessReceipt] = useState(null);
@@ -531,7 +531,7 @@ export function Home() {
               type="password"
               value={openPassword}
               onChange={(e) => setOpenPassword(e.target.value)}
-              placeholder="Demo@123"
+              placeholder="Enter your password"
             />
           </div>
         )}

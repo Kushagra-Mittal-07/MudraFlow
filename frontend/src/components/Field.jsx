@@ -115,8 +115,6 @@ export function Field({
         </div>
       ) : helper ? (
         <div className="mf-helper">{helper}</div>
-      ) : isOtp ? (
-        <div className="mf-helper">Demo mode: the OTP is 123456.</div>
       ) : null}
     </div>
   );

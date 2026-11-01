@@ -10,8 +10,8 @@ export function Login() {
   const location = useLocation();
   const { loginCustomer, loading } = useAuth();
 
-  const [customerId, setCustomerId] = useState('10000001');
-  const [password, setPassword] = useState('Demo@123');
+  const [customerId, setCustomerId] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [remainingAttempts, setRemainingAttempts] = useState(null);
   const [lockExpiresAt, setLockExpiresAt] = useState(null);
@@ -118,15 +118,9 @@ export function Login() {
           </div>
         </div>
 
-        {/* Sample Ledger Record */}
         <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.15)', paddingTop: '24px' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--gold)', marginBottom: '8px' }}>
-            DEMO CREDENTIALS
-          </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: '22px' }}>
-            <div>Customer ID: 10000001 (Riya Sharma)</div>
-            <div>Password: Demo@123</div>
-            <div>OTP for transfers: 123456</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(255, 255, 255, 0.6)', lineHeight: '20px' }}>
+            Official Ledger System · Encrypted Session
           </div>
         </div>
       </div>
@@ -179,7 +173,7 @@ export function Login() {
               required
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
-              placeholder="10000001"
+              placeholder="e.g. 10000001"
               helper="8-digit numeric identifier"
               disabled={isLocked || loading}
             />
@@ -190,7 +184,7 @@ export function Login() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Demo@123"
+              placeholder="Enter your password"
               disabled={isLocked || loading}
             />
 

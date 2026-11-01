@@ -376,7 +376,7 @@ export function Styleguide() {
             { label: 'Beneficiary IFSC', value: 'MUDF0000483' },
             { label: 'Amount Paid', value: '₹25,000.00' },
             { label: 'Amount in Words', value: 'Twenty-five thousand rupees only', mono: false },
-            { label: 'Remarks', value: 'College project advance', mono: false },
+            { label: 'Remarks', value: 'Vendor invoice settlement', mono: false },
             { label: 'Status', value: 'SUCCESSFUL' }
           ]}
         >

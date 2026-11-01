@@ -19,21 +19,20 @@ export function Register() {
   const [copiedId, setCopiedId] = useState(false);
   const [copiedAcc, setCopiedAcc] = useState(false);
 
-  // Form state
+  // Form state - inputs start empty
   const [formData, setFormData] = useState({
     full_name: '',
-    dob: '1995-05-15',
+    dob: '',
     pan: '',
     phone: '',
     email: '',
     address: '',
     account_type: 'SAVINGS',
     branch_id: '1',
-    opening_amount: '5000',
-    password: 'Demo@123',
-    confirm_password: 'Demo@123',
-    declaration: true,
-    otp: '123456'
+    opening_amount: '',
+    password: '',
+    confirm_password: '',
+    otp: ''
   });
 
   // Success receipt data
@@ -60,20 +59,20 @@ export function Register() {
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
-    if (!formData.full_name || !formData.email || !formData.phone || !formData.pan) {
+    if (!formData.full_name || !formData.email || !formData.phone || !formData.pan || !formData.dob) {
       setError('Please fill in all required personal details');
+      return;
+    }
+    if (!formData.opening_amount || parseFloat(formData.opening_amount) < 1000) {
+      setError('Minimum opening deposit is ₹1,000.00');
+      return;
+    }
+    if (!formData.password || formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
     if (formData.password !== formData.confirm_password) {
       setError('Passwords do not match');
-      return;
-    }
-    if (parseFloat(formData.opening_amount) < 1000) {
-      setError('Minimum opening deposit is ₹1,000.00');
-      return;
-    }
-    if (!formData.declaration) {
-      setError('You must confirm the project declaration');
       return;
     }
     setStep(2);
@@ -81,6 +80,10 @@ export function Register() {
 
   const handleVerifySubmit = async (e) => {
     e.preventDefault();
+    if (!formData.otp) {
+      setError('Please enter the 6-digit verification code');
+      return;
+    }
     setLoading(true);
     setError('');
 
@@ -129,81 +132,59 @@ export function Register() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--page)' }}>
-      {/* Left Branding Panel (40% width, hidden on < 900px) */}
-      <div
-        className="mf-desktop-only"
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--page)', display: 'flex', flexDirection: 'column' }}>
+      {/* Top Navigation Bar */}
+      <header
         style={{
-          width: '40%',
-          backgroundColor: 'var(--green-950)',
-          color: '#FFFFFF',
-          padding: '48px 40px',
+          borderBottom: '1px solid var(--line)',
+          backgroundColor: '#FFFFFF',
+          padding: '16px 32px',
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'center',
           justifyContent: 'space-between'
         }}
       >
-        <div>
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 700, color: '#FFFFFF' }}>
-              MudraFlow
-            </span>
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', fontWeight: 700, color: 'var(--ink)' }}>
+            MudraFlow
+          </span>
+        </Link>
+        <div style={{ fontSize: '14px', color: 'var(--ink-2)' }}>
+          Already have an account?{' '}
+          <Link to="/login" style={{ fontWeight: 600, color: 'var(--green-900)' }}>
+            Sign in
           </Link>
-          <div style={{ marginTop: '48px' }}>
-            <div className="mf-label" style={{ color: 'var(--gold)', marginBottom: '12px' }}>
-              OFFICIAL LEDGER SYSTEM
-            </div>
-            <h2 style={{ fontSize: '32px', lineHeight: '40px', color: '#FFFFFF', marginBottom: '24px' }}>
-              Direct access to a transparent banking ledger.
-            </h2>
-            <p style={{ color: 'rgba(255, 255, 255, 0.75)', fontSize: '15px', lineHeight: '24px' }}>
-              Register once to receive your personal 8-digit Customer ID. Every deposit, transfer and loan
-              is recorded with full cryptographic and transactional consistency.
-            </p>
-          </div>
         </div>
+      </header>
 
-        {/* Sample Ledger Lines */}
-        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.15)', paddingTop: '24px' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--gold)', marginBottom: '8px' }}>
-            LIVE TRANSACTION RECORD
-          </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: '22px' }}>
-            <div>01 OCT · OPENING DEPOSIT · +₹5,000.00 ↑</div>
-            <div>05 OCT · NEFT PAYEE TRANSFER · −₹1,200.00 ↓</div>
-            <div>12 OCT · ACTIVE FIXED DEPOSIT · LOCKED</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Form Panel (60% width) */}
-      <div
+      {/* Centered Form Layout (Single Column) */}
+      <main
         style={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          padding: '40px 24px',
-          overflowY: 'auto'
+          justifyContent: 'flex-start',
+          padding: '40px 20px 60px'
         }}
       >
-        <div style={{ maxWidth: '520px', width: '100%' }}>
-          {/* Mobile Top Logo */}
-          <div className="mf-mobile-only" style={{ marginBottom: '24px', textAlign: 'center' }}>
-            <Link to="/" style={{ textDecoration: 'none' }}>
-              <span style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 700, color: 'var(--ink)' }}>
-                MudraFlow
-              </span>
-            </Link>
-          </div>
-
+        <div
+          style={{
+            maxWidth: '560px',
+            width: '100%',
+            backgroundColor: '#FFFFFF',
+            border: '1px solid var(--line)',
+            borderRadius: '4px',
+            padding: '36px 32px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+          }}
+        >
           {/* Progress Indicator */}
           <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--line)', paddingBottom: '12px' }}>
             <span className="mf-label" style={{ color: 'var(--green-900)' }}>
-              {step === 1 && 'Step 1 of 3 · Details'}
-              {step === 2 && 'Step 2 of 3 · Verify'}
-              {step === 3 && 'Step 3 of 3 · Receipt'}
+              {step === 1 && 'Step 1 of 3 · Personal & Account Details'}
+              {step === 2 && 'Step 2 of 3 · Verification'}
+              {step === 3 && 'Step 3 of 3 · Official Receipt'}
             </span>
           </div>
 
@@ -225,7 +206,7 @@ export function Register() {
                   required
                   value={formData.full_name}
                   onChange={(e) => handleChange('full_name', e.target.value)}
-                  placeholder="Riya Sharma"
+                  placeholder="e.g. Riya Sharma"
                 />
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <Field
@@ -241,7 +222,7 @@ export function Register() {
                     required
                     value={formData.pan}
                     onChange={(e) => handleChange('pan', e.target.value.toUpperCase())}
-                    placeholder="ABCDE1234F"
+                    placeholder="e.g. ABCDE1234F"
                   />
                 </div>
               </div>
@@ -256,7 +237,7 @@ export function Register() {
                     required
                     value={formData.phone}
                     onChange={(e) => handleChange('phone', e.target.value)}
-                    placeholder="9876543210"
+                    placeholder="e.g. 9876543210"
                   />
                   <Field
                     label="Email Address"
@@ -264,7 +245,7 @@ export function Register() {
                     required
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
-                    placeholder="riya.sharma@example.com"
+                    placeholder="e.g. riya@example.com"
                   />
                 </div>
                 <Field
@@ -273,7 +254,7 @@ export function Register() {
                   rows={2}
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
-                  placeholder="Flat 402, Shivalik Apts, Sector 9, Rohini, New Delhi"
+                  placeholder="Street address, city, state, PIN code"
                 />
               </div>
 
@@ -302,11 +283,12 @@ export function Register() {
                   }))}
                 />
                 <Field
-                  label="Opening Deposit (Demo money)"
+                  label="Opening Deposit"
                   type="amount"
                   value={formData.opening_amount}
                   onChange={(e) => handleChange('opening_amount', e.target.value)}
                   helper="Minimum deposit is ₹1,000.00"
+                  placeholder="5000"
                 />
               </div>
 
@@ -319,25 +301,15 @@ export function Register() {
                   value={formData.password}
                   onChange={(e) => handleChange('password', e.target.value)}
                   helper="At least 8 characters with letters and numbers"
+                  placeholder="Choose a strong password"
                 />
                 <Field
                   label="Confirm Password"
                   type="password"
                   value={formData.confirm_password}
                   onChange={(e) => handleChange('confirm_password', e.target.value)}
+                  placeholder="Repeat your password"
                 />
-
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--ink-2)', cursor: 'pointer', marginTop: '12px' }}>
-                  <input
-                    type="checkbox"
-                    checked={formData.declaration}
-                    onChange={(e) => handleChange('declaration', e.target.checked)}
-                    style={{ marginTop: '2px' }}
-                  />
-                  <span>
-                    I confirm these details are true. This is a college DBMS project and no real money is involved.
-                  </span>
-                </label>
               </div>
 
               <Button variant="primary" full type="submit">
@@ -346,7 +318,7 @@ export function Register() {
 
               <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '14px', color: 'var(--ink-2)' }}>
                 Already have an account?{' '}
-                <Link to="/login" style={{ fontWeight: 600 }}>
+                <Link to="/login" style={{ fontWeight: 600, color: 'var(--green-900)' }}>
                   Log in
                 </Link>
               </div>
@@ -358,7 +330,7 @@ export function Register() {
             <form onSubmit={handleVerifySubmit}>
               <h2 style={{ fontSize: '26px', marginBottom: '8px' }}>Verify your registration</h2>
               <p className="mf-helper" style={{ marginBottom: '24px' }}>
-                Enter the demo one-time verification code to complete opening your account.
+                Enter the 6-digit one-time verification code to complete opening your account.
               </p>
 
               <Field
@@ -437,10 +409,9 @@ export function Register() {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
 
 export default Register;
-

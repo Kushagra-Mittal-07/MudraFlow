@@ -133,7 +133,7 @@ async function main() {
     console.log('1. Testing Registration Flow at /register...');
     await cdp.setViewport(1280, 900, false);
     await cdp.send('Page.navigate', { url: 'http://localhost:5173/register' });
-    await cdp.waitFor('document.querySelector("input[placeholder=\'Riya Sharma\']")');
+    await cdp.waitFor('document.querySelector("input[placeholder=\'e.g. Riya Sharma\']")');
 
     const randNum = Math.floor(1000 + Math.random() * 9000);
     const newCustName = `Kavita Rao ${randNum}`;
@@ -152,11 +152,15 @@ async function main() {
           el.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
-        setReactInput(document.querySelector("input[placeholder='Riya Sharma']"), "${newCustName}");
-        setReactInput(document.querySelector("input[placeholder='ABCDE1234F']"), "${newCustPan}");
-        setReactInput(document.querySelector("input[placeholder='9876543210']"), "9811223344");
-        setReactInput(document.querySelector("input[placeholder='riya.sharma@example.com']"), "${newCustEmail}");
+        setReactInput(document.querySelector("input[placeholder='e.g. Riya Sharma']"), "${newCustName}");
+        setReactInput(document.querySelector("input[type='date']"), "1995-05-15");
+        setReactInput(document.querySelector("input[placeholder='e.g. ABCDE1234F']"), "${newCustPan}");
+        setReactInput(document.querySelector("input[placeholder='e.g. 9876543210']"), "9811223344");
+        setReactInput(document.querySelector("input[placeholder='e.g. riya@example.com']"), "${newCustEmail}");
         setReactInput(document.querySelector("textarea"), "Sector 14, Dwarka, New Delhi");
+        setReactInput(document.querySelector("input[placeholder='5000']"), "5000");
+        setReactInput(document.querySelector("input[placeholder='Choose a strong password']"), "Demo@123");
+        setReactInput(document.querySelector("input[placeholder='Repeat your password']"), "Demo@123");
       })()
     `);
 
@@ -230,7 +234,7 @@ async function main() {
 
     // Navigate to /login and attempt with locked customer
     await cdp.send('Page.navigate', { url: 'http://localhost:5173/login' });
-    await cdp.waitFor('document.querySelector("input[placeholder=\'10000001\']")');
+    await cdp.waitFor('document.querySelector("input[placeholder=\'e.g. 10000001\']")');
 
     await cdp.evaluate(`
       (() => {
@@ -241,8 +245,8 @@ async function main() {
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        setReactInput(document.querySelector("input[placeholder='10000001']"), "${lockCustId}");
-        setReactInput(document.querySelector("input[placeholder='Demo@123']"), "Demo@123");
+        setReactInput(document.querySelector("input[placeholder='e.g. 10000001']"), "${lockCustId}");
+        setReactInput(document.querySelector("input[type='password']"), "Demo@123");
         document.querySelector("button[type='submit']").click();
       })()
     `);
@@ -263,7 +267,7 @@ async function main() {
     await cdp.send('Page.navigate', { url: 'http://localhost:5173/' });
     await new Promise(r => setTimeout(r, 400));
     await cdp.send('Page.navigate', { url: 'http://localhost:5173/login' });
-    await cdp.waitFor('document.querySelector("input[placeholder=\'10000001\']")');
+    await cdp.waitFor('document.querySelector("input[placeholder=\'e.g. 10000001\']")');
 
     await cdp.evaluate(`
       (() => {
@@ -274,8 +278,8 @@ async function main() {
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        setReactInput(document.querySelector("input[placeholder='10000001']"), "10000001");
-        setReactInput(document.querySelector("input[placeholder='Demo@123']"), "Demo@123");
+        setReactInput(document.querySelector("input[placeholder='e.g. 10000001']"), "10000001");
+        setReactInput(document.querySelector("input[type='password']"), "Demo@123");
         document.querySelector("button[type='submit']").click();
       })()
     `);

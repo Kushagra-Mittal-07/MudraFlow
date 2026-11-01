@@ -10,8 +10,8 @@ export function StaffLogin() {
   const navigate = useNavigate();
   const { loginStaff, loading } = useAuth();
 
-  const [empId, setEmpId] = useState('1');
-  const [password, setPassword] = useState('Demo@123');
+  const [empId, setEmpId] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -66,12 +66,8 @@ export function StaffLogin() {
         </div>
 
         <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.15)', paddingTop: '24px' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--gold)', marginBottom: '8px' }}>
-            DEMO STAFF CREDENTIALS
-          </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(255, 255, 255, 0.8)', lineHeight: '22px' }}>
-            <div>Employee ID: 1 (Branch Manager)</div>
-            <div>Password: Demo@123</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(255, 255, 255, 0.6)', lineHeight: '20px' }}>
+            Authorized Personnel Only · Audit logging active
           </div>
         </div>
       </div>
@@ -113,7 +109,7 @@ export function StaffLogin() {
               required
               value={empId}
               onChange={(e) => setEmpId(e.target.value)}
-              placeholder="1"
+              placeholder="e.g. 1"
               helper="Numeric employee identifier"
             />
 
@@ -123,7 +119,7 @@ export function StaffLogin() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Demo@123"
+              placeholder="Enter your password"
             />
 
             <Button
@@ -149,4 +145,3 @@ export function StaffLogin() {
 }
 
 export default StaffLogin;
-

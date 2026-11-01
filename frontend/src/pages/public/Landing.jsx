@@ -49,7 +49,7 @@ export function Landing() {
           {/* Left Hero (7 cols) */}
           <div>
             <div className="mf-label" style={{ color: 'var(--green-700)', marginBottom: '12px' }}>
-              A COLLEGE DBMS PROJECT
+              TRANSPARENT LEDGER BANKING
             </div>
             <h1 style={{ fontSize: '52px', lineHeight: '58px', color: 'var(--ink)', marginBottom: '20px' }}>
               A bank that keeps its books where you can see them.
@@ -207,7 +207,7 @@ export function Landing() {
             MudraFlow
           </span>
           <div style={{ fontSize: '13px', color: 'var(--ink-3)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span>MudraFlow is a college project. No real money is involved.</span>
+            <span>© 2026 MudraFlow Bank Ltd. All rights reserved.</span>
             <Link to="/staff/login" style={{ color: 'var(--ink-2)', textDecoration: 'none' }}>
               Staff login
             </Link>
