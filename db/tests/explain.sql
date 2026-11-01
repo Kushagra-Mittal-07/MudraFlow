@@ -69,3 +69,4 @@ ORDER BY created_at DESC;
 
 -- 6. Cleanup
 DROP TABLE IF EXISTS txn_copy;
+

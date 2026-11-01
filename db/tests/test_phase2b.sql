@@ -958,3 +958,4 @@ CALL run_phase2b_tests();
 
 -- Cleanup throwaway database
 DROP DATABASE mudraflow_test;
+

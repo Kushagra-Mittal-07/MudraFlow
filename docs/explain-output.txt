@@ -66,3 +66,4 @@ Observations:
 - Extra: 'Backward index scan' traverses the ordered B-Tree index in reverse order,
   completely eliminating 'Using filesort'.
 ================================================================================
+
