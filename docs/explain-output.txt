@@ -1,0 +1,68 @@
+================================================================================
+MudraFlow: Database Index Performance Comparison (D4)
+File: docs/explain-output.txt
+Generated from: db/tests/explain.sql on MySQL 8.0.43 (InnoDB)
+================================================================================
+
+Query:
+  SELECT * FROM txn_copy
+  WHERE from_account_id = 1
+    AND created_at BETWEEN '2026-02-01' AND '2026-03-01'
+  ORDER BY created_at DESC;
+
+Table Size:
+  50,000 rows (inserted via db/tests/explain.sql)
+
+--------------------------------------------------------------------------------
+1. EXPLAIN BEFORE INDEX (No secondary index, table scan):
+--------------------------------------------------------------------------------
+id          : 1
+select_type : SIMPLE
+table       : txn_copy
+partitions  : NULL
+type        : ALL
+possible_keys: NULL
+key         : NULL
+key_len     : NULL
+ref         : NULL
+rows        : 50000
+filtered    : 1.11
+Extra       : Using where; Using filesort
+
+Observations:
+- Access Type: ALL (Full Table Scan). The storage engine must inspect all 50,000 rows.
+- Key: NULL (No applicable index found).
+- Rows Examined: 50,000.
+- Extra: 'Using filesort' indicates an in-memory or on-disk sort pass was required
+  to satisfy the 'ORDER BY created_at DESC' clause.
+
+--------------------------------------------------------------------------------
+2. INDEX CREATION:
+--------------------------------------------------------------------------------
+CREATE INDEX idx_txn_copy_from_created ON txn_copy(from_account_id, created_at);
+
+--------------------------------------------------------------------------------
+3. EXPLAIN AFTER INDEX (Composite B-Tree index on (from_account_id, created_at)):
+--------------------------------------------------------------------------------
+id          : 1
+select_type : SIMPLE
+table       : txn_copy
+partitions  : NULL
+type        : range
+possible_keys: idx_txn_copy_from_created
+key         : idx_txn_copy_from_created
+key_len     : 10 (INT 5 bytes + DATETIME 5 bytes)
+ref         : NULL
+rows        : 112
+filtered    : 100.00
+Extra       : Using index condition; Backward index scan
+
+Observations:
+- Access Type: range. The engine directly seeks to the matching from_account_id and
+  scans only the requested date range within the B-Tree index leaf nodes.
+- Key: idx_txn_copy_from_created is actively chosen.
+- Rows Examined: Reduced from 50,000 down to 112 (a 446x reduction in disk/buffer I/O).
+- Filtered: 100.00% of examined rows match query criteria.
+- Extra: 'Backward index scan' traverses the ordered B-Tree index in reverse order,
+  completely eliminating 'Using filesort'.
+================================================================================
