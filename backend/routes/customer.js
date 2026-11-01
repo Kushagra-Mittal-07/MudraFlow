@@ -601,6 +601,33 @@ router.get('/beneficiaries', asyncHandler(async (req, res) => {
 }));
 
 // =============================================================================
+// POST /beneficiaries/verify
+// =============================================================================
+router.post('/beneficiaries/verify', asyncHandler(async (req, res) => {
+  const { account_number, ifsc } = req.body;
+  const [[receiver]] = await pool.query(
+    `SELECT a.account_id, a.account_number, b.branch_name, b.ifsc, c.full_name
+     FROM account a
+     JOIN branch b ON a.branch_id = b.branch_id
+     JOIN customer c ON a.customer_id = c.customer_id
+     WHERE a.account_number = ? AND b.ifsc = ?`,
+    [account_number, ifsc]
+  );
+  if (!receiver) {
+    return res.status(404).json({ ok: false, message: 'Receiver account or IFSC not found' });
+  }
+  return res.json({
+    ok: true,
+    data: {
+      account_number: receiver.account_number,
+      branch_name: receiver.branch_name,
+      ifsc: receiver.ifsc,
+      full_name: receiver.full_name
+    }
+  });
+}));
+
+// =============================================================================
 // POST /beneficiaries  [pw]
 // =============================================================================
 router.post('/beneficiaries', asyncHandler(async (req, res) => {

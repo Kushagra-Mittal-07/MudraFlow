@@ -1138,3 +1138,22 @@
   align-items: center;
   gap: var(--s2);
 }
+
+/* Transfer page 7/5 responsive columns */
+@media (min-width: 1024px) {
+  .mf-transfer-left-col {
+    grid-column: span 7 !important;
+  }
+  .mf-transfer-right-col {
+    grid-column: span 5 !important;
+  }
+}
+@media (max-width: 1023px) {
+  .mf-transfer-left-col {
+    grid-column: span 12 !important;
+  }
+  .mf-transfer-right-col {
+    grid-column: span 12 !important;
+    position: static !important;
+  }
+}

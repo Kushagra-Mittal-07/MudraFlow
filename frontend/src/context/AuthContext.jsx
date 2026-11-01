@@ -38,6 +38,13 @@ export function AuthProvider({ children }) {
       });
 
       if (res.ok && res.data?.token) {
+        localStorage.setItem('mf_token', res.data.token);
+        localStorage.setItem('mf_role', 'customer');
+        localStorage.setItem('mf_user', JSON.stringify({
+          id: res.data.customer_id,
+          name: res.data.full_name,
+          role: 'customer'
+        }));
         setToken(res.data.token);
         setRole('customer');
         setUser({
@@ -61,6 +68,14 @@ export function AuthProvider({ children }) {
       });
 
       if (res.ok && res.data?.token) {
+        localStorage.setItem('mf_token', res.data.token);
+        localStorage.setItem('mf_role', 'staff');
+        localStorage.setItem('mf_user', JSON.stringify({
+          id: res.data.emp_id,
+          name: res.data.full_name,
+          branch_name: res.data.branch_name,
+          role: 'staff'
+        }));
         setToken(res.data.token);
         setRole('staff');
         setUser({

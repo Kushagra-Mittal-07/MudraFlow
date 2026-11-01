@@ -5,6 +5,7 @@
 
 @import './tokens.css';
 @import './components.css';
+@import './print.css';
 
 /* Self-hosted fonts via @fontsource */
 @import '@fontsource/playfair-display/600.css';

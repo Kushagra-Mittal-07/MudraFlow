@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { formatDate } from '../lib/format';
 import Money from './Money';
 
@@ -80,7 +81,7 @@ export function LedgerTable({
                 <div className="mf-mobile-only mf-mobile-card-row3">
                   <span>Bal: <Money value={item.balance} type="neutral" /></span>
                   {item.receiptLink && (
-                    <a href={item.receiptLink} className="mf-btn-link">View slip →</a>
+                    <Link to={item.receiptLink} className="mf-btn-link">View slip →</Link>
                   )}
                 </div>
               </td>
@@ -88,7 +89,7 @@ export function LedgerTable({
               {entries.some(e => e.receiptLink) && (
                 <td className="mf-text-right mf-desktop-only">
                   {item.receiptLink ? (
-                    <a href={item.receiptLink} className="mf-btn-link">Slip →</a>
+                    <Link to={item.receiptLink} className="mf-btn-link">Slip →</Link>
                   ) : <span>–</span>}
                 </td>
               )}

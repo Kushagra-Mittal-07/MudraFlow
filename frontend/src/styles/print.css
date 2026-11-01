@@ -1,0 +1,90 @@
+/* =============================================================================
+   MudraFlow Print Stylesheet
+   Spec: spec/05-ui.md Section 10
+   ============================================================================= */
+
+@media print {
+  @page {
+    margin: 16mm;
+    size: auto;
+  }
+
+  html, body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  /* Hide navigation, toolbars, buttons, chips, tabs */
+  .mf-sidebar,
+  .mf-topbar,
+  .mf-bottom-tab-bar,
+  .no-print,
+  button,
+  .mf-btn,
+  .mf-chip,
+  .mf-pagination,
+  .mf-filters-toolbar {
+    display: none !important;
+  }
+
+  /* Full width container for printed document */
+  .mf-shell-main,
+  .mf-content,
+  .mf-page-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Print header visible only during print */
+  .mf-print-header {
+    display: block !important;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 12px;
+  }
+
+  /* Slip print styling */
+  .mf-slip-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid #000000 !important;
+    page-break-inside: avoid;
+    margin: 0 !important;
+  }
+
+  /* Preserve stamps in print */
+  .mf-stamp {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Statement / Ledger table in print */
+  .mf-ledger-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .mf-ledger-table th,
+  .mf-ledger-table td {
+    border-bottom: 1px solid #CCCCCC !important;
+    color: #000000 !important;
+  }
+
+  .mf-ledger-table th {
+    background: #F5F5F5 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Hide print-only header on screen */
+@media screen {
+  .mf-print-header {
+    display: none !important;
+  }
+}

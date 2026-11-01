@@ -12,6 +12,10 @@ import Styleguide from './pages/Styleguide';
 
 // Customer pages
 import Home from './pages/customer/Home';
+import Transfer from './pages/customer/Transfer';
+import Payees from './pages/customer/Payees';
+import History from './pages/customer/History';
+import Receipt from './pages/customer/Receipt';
 import AppShell from './components/AppShell';
 
 // Route guard for customer routes
@@ -91,7 +95,7 @@ export function AppRoutes() {
         path="/app/transfer"
         element={
           <RequireCustomer>
-            <PlaceholderPage title="Transfer Money" />
+            <Transfer />
           </RequireCustomer>
         }
       />
@@ -99,7 +103,7 @@ export function AppRoutes() {
         path="/app/payees"
         element={
           <RequireCustomer>
-            <PlaceholderPage title="Saved Payees" />
+            <Payees />
           </RequireCustomer>
         }
       />
@@ -107,7 +111,15 @@ export function AppRoutes() {
         path="/app/history"
         element={
           <RequireCustomer>
-            <PlaceholderPage title="Transaction History" />
+            <History />
+          </RequireCustomer>
+        }
+      />
+      <Route
+        path="/app/receipt/:reference"
+        element={
+          <RequireCustomer>
+            <Receipt />
           </RequireCustomer>
         }
       />
