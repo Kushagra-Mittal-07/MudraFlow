@@ -16,6 +16,9 @@ import Transfer from './pages/customer/Transfer';
 import Payees from './pages/customer/Payees';
 import History from './pages/customer/History';
 import Receipt from './pages/customer/Receipt';
+import FixedDeposits from './pages/customer/FixedDeposits';
+import Services from './pages/customer/Services';
+import Profile from './pages/customer/Profile';
 import AppShell from './components/AppShell';
 
 // Route guard for customer routes
@@ -127,7 +130,7 @@ export function AppRoutes() {
         path="/app/fd"
         element={
           <RequireCustomer>
-            <PlaceholderPage title="Fixed Deposits" />
+            <FixedDeposits />
           </RequireCustomer>
         }
       />
@@ -135,7 +138,7 @@ export function AppRoutes() {
         path="/app/services"
         element={
           <RequireCustomer>
-            <PlaceholderPage title="Services & Applications" />
+            <Services />
           </RequireCustomer>
         }
       />
@@ -143,7 +146,7 @@ export function AppRoutes() {
         path="/app/profile"
         element={
           <RequireCustomer>
-            <PlaceholderPage title="Profile & Account Details" />
+            <Profile />
           </RequireCustomer>
         }
       />

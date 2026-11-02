@@ -551,7 +551,7 @@ router.get('/transactions', asyncHandler(async (req, res) => {
   const [[summary]] = await pool.query(summarySql, summaryParams);
 
   // Paginated result
-  const perPage = 20;
+  const perPage = Math.min(parseInt(req.query.limit) || parseInt(req.query.per_page) || 20, 100);
   const offset = (parseInt(page) - 1) * perPage;
   const pageSql = `${ledgerSql}${filterSql} ORDER BY created_at DESC, txn_id DESC LIMIT ? OFFSET ?`;
   const pageParams = [...params, ...filterParams, perPage, offset];
@@ -704,9 +704,12 @@ router.post('/fd', asyncHandler(async (req, res) => {
 // =============================================================================
 router.get('/fd', asyncHandler(async (req, res) => {
   const [fds] = await pool.query(
-    `SELECT fd_id, account_id, amount, rate, tenure_months, start_date,
-            maturity_date, maturity_amount, maturity_instruction, status
-     FROM fixed_deposit WHERE customer_id = ? ORDER BY fd_id DESC`,
+    `SELECT fd.fd_id, fd.account_id, fd.amount, fd.rate, fd.tenure_months, fd.start_date,
+            fd.maturity_date, fd.maturity_amount, fd.maturity_instruction, fd.status,
+            a.account_number
+     FROM fixed_deposit fd
+     JOIN account a ON fd.account_id = a.account_id
+     WHERE fd.customer_id = ? ORDER BY fd.fd_id DESC`,
     [req.user.id]
   );
   return res.json({ ok: true, data: fds });
@@ -761,10 +764,11 @@ router.post('/services/debit-card', asyncHandler(async (req, res) => {
     return res.status(403).json({ ok: false, message: 'Account not found or access denied' });
   }
 
+  const cleanNetwork = (network || 'VISA').toUpperCase();
   await pool.query(
     `INSERT INTO service_request (customer_id, account_id, request_type, name_on_card, network, delivery_address, status)
      VALUES (?, ?, 'DEBIT_CARD', ?, ?, ?, 'REQUESTED')`,
-    [req.user.id, account_id, name_on_card, network, delivery_address]
+    [req.user.id, account_id, name_on_card, cleanNetwork, delivery_address]
   );
 
   return res.status(201).json({ ok: true, data: { message: 'Debit card request submitted' } });
@@ -794,13 +798,33 @@ router.post('/services/cheque-book', asyncHandler(async (req, res) => {
 }));
 
 // =============================================================================
+// GET /services/cards — approved active debit cards
+// =============================================================================
+router.get('/services/cards', asyncHandler(async (req, res) => {
+  const [rows] = await pool.query(
+    `SELECT sr.request_id, sr.account_id, sr.name_on_card, sr.network,
+            sr.card_number, sr.card_expiry AS expiry_date, sr.status, sr.requested_on,
+            a.account_number
+     FROM service_request sr
+     JOIN account a ON sr.account_id = a.account_id
+     WHERE sr.customer_id = ? AND sr.request_type = 'DEBIT_CARD' AND sr.status = 'APPROVED'
+     ORDER BY sr.request_id DESC`,
+    [req.user.id]
+  );
+  return res.json({ ok: true, data: rows });
+}));
+
+// =============================================================================
 // GET /applications — from v_applications for this customer
 // =============================================================================
 router.get('/applications', asyncHandler(async (req, res) => {
   const [rows] = await pool.query(
-    `SELECT application_type, application_id, details, status, applied_on
-     FROM v_applications WHERE customer_id = ?
-     ORDER BY applied_on DESC`,
+    `SELECT v.application_type, v.application_id, v.account_id, v.details, v.status, v.applied_on,
+            a.account_number
+     FROM v_applications v
+     LEFT JOIN account a ON v.account_id = a.account_id
+     WHERE v.customer_id = ?
+     ORDER BY v.applied_on DESC`,
     [req.user.id]
   );
   return res.json({ ok: true, data: rows });

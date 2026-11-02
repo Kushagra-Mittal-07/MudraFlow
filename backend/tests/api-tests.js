@@ -497,7 +497,7 @@ async function runTests() {
     // TEST E13: History rows balance_after invariant
     // =========================================================================
     {
-      const res = await request('GET', '/api/transactions?account_id=1&page=1', null, customerAToken);
+      const res = await request('GET', '/api/transactions?account_id=1&page=1&limit=100', null, customerAToken);
       const txns = res.body?.data?.transactions || [];
 
       const [[currentAcct]] = await pool.query('SELECT balance FROM account WHERE account_id = 1');
