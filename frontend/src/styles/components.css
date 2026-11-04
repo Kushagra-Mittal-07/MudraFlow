@@ -1086,6 +1086,12 @@
   .mf-split-detail {
     width: 100%;
   }
+  .mf-split-list.mf-mobile-hidden {
+    display: none !important;
+  }
+  .mf-split-detail.mf-mobile-hidden {
+    display: none !important;
+  }
 }
 
 /* -----------------------------------------------------------------------------

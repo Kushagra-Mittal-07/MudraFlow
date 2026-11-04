@@ -30,15 +30,15 @@ export function SplitView({
     setMobileShowDetail(true);
   };
 
+  const handleBack = () => {
+    setMobileShowDetail(false);
+    if (onSelect) onSelect(null);
+  };
+
   return (
-    <div className={`mf-split-view ${className}`}>
-      {/* Master list */}
-      <div
-        className="mf-split-list"
-        style={{
-          display: mobileShowDetail ? 'none' : 'flex'
-        }}
-      >
+    <div className={`mf-split-view ${mobileShowDetail ? 'mf-split-mobile-detail' : ''} ${className}`}>
+      {/* Master list (Left column: always visible on desktop, toggled on mobile) */}
+      <div className={`mf-split-list ${mobileShowDetail ? 'mf-mobile-hidden' : ''}`}>
         {items.map((item) => {
           const isSelected = item.id === selectedId;
           return (
@@ -55,23 +55,20 @@ export function SplitView({
         })}
       </div>
 
-      {/* Detail panel */}
-      <div
-        className="mf-split-detail"
-        style={{
-          display: mobileShowDetail ? 'block' : undefined
-        }}
-      >
-        {/* Mobile Back Button */}
-        <div className="mf-mobile-only" style={{ marginBottom: '16px' }}>
-          <Button
-            variant="link"
-            onClick={() => setMobileShowDetail(false)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <ArrowLeft size={16} /> Back to list
-          </Button>
-        </div>
+      {/* Detail panel (Right column: always visible on desktop, toggled on mobile) */}
+      <div className={`mf-split-detail ${!mobileShowDetail && !selectedItem ? 'mf-mobile-hidden' : ''}`}>
+        {/* Back Button (accessible on both desktop and mobile to return to full customer list) */}
+        {selectedItem && (
+          <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Button
+              variant="link"
+              onClick={handleBack}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+            >
+              <ArrowLeft size={16} /> Back to all customers
+            </Button>
+          </div>
+        )}
 
         {selectedItem ? (
           renderDetail ? renderDetail(selectedItem) : <div>{JSON.stringify(selectedItem)}</div>

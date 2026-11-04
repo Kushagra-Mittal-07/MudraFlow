@@ -393,6 +393,63 @@ router.get('/staff/transactions', asyncHandler(async (req, res) => {
 }));
 
 // =============================================================================
+// 10A. GET /staff/fd – all customer fixed deposits with filters (?filter=ACTIVE|DUE|MATURED|ALL)
+// =============================================================================
+router.get('/staff/fd', asyncHandler(async (req, res) => {
+  const { filter = 'ACTIVE' } = req.query;
+
+  let whereClause = '1=1';
+  if (filter === 'DUE') {
+    whereClause = "fd.status = 'ACTIVE' AND fd.maturity_date <= CURDATE()";
+  } else if (filter === 'ACTIVE') {
+    whereClause = "fd.status = 'ACTIVE'";
+  } else if (filter === 'MATURED') {
+    whereClause = "fd.status = 'MATURED'";
+  }
+
+  const [rows] = await pool.query(`
+    SELECT fd.fd_id, fd.customer_id, fd.account_id, fd.amount, fd.rate,
+           fd.tenure_months, fd.maturity_date, fd.maturity_amount,
+           fd.maturity_instruction, fd.status, fd.start_date,
+           c.full_name AS customer_name,
+           a.account_number,
+           CASE
+             WHEN fd.status = 'ACTIVE' AND fd.maturity_date <= CURDATE() THEN 1
+             ELSE 0
+           END AS is_due
+    FROM fixed_deposit fd
+    JOIN customer c ON fd.customer_id = c.customer_id
+    JOIN account a ON fd.account_id = a.account_id
+    WHERE ${whereClause}
+    ORDER BY fd.fd_id DESC
+  `);
+
+  const [[stats]] = await pool.query(`
+    SELECT
+      COUNT(CASE WHEN status = 'ACTIVE' THEN 1 END) AS active_count,
+      COALESCE(SUM(CASE WHEN status = 'ACTIVE' THEN amount ELSE 0 END), 0) AS active_amount,
+      COUNT(CASE WHEN status = 'ACTIVE' AND maturity_date <= CURDATE() THEN 1 END) AS due_count,
+      COALESCE(SUM(CASE WHEN status = 'ACTIVE' AND maturity_date <= CURDATE() THEN maturity_amount ELSE 0 END), 0) AS due_payout,
+      COUNT(*) AS total_count
+    FROM fixed_deposit
+  `);
+
+  return res.json({
+    ok: true,
+    data: {
+      fds: rows,
+      stats: {
+        active_count: stats.active_count || 0,
+        active_amount: parseFloat(stats.active_amount).toFixed(2),
+        due_count: stats.due_count || 0,
+        due_payout: parseFloat(stats.due_payout).toFixed(2),
+        total_count: stats.total_count || 0
+      }
+    }
+  });
+}));
+
+// =============================================================================
 // 10. GET /staff/fd/due – active fixed deposits due for maturity
 // =============================================================================
 router.get('/staff/fd/due', asyncHandler(async (req, res) => {

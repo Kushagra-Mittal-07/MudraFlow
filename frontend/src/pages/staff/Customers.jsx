@@ -72,6 +72,8 @@ export function StaffCustomers() {
   useEffect(() => {
     if (selectedCustomerId) {
       loadCustomerDetail(selectedCustomerId);
+    } else {
+      setCustomerDetail(null);
     }
   }, [selectedCustomerId]);
 
