@@ -3,16 +3,7 @@ import { X } from 'lucide-react';
 import Button from './Button';
 
 /**
- * Drawer Component
- * Props:
- * - isOpen: boolean
- * - onClose: function
- * - title: string
- * - primaryLabel: string
- * - onPrimary: function
- * - primaryLoading: boolean
- * - cancelLabel: string
- * - children: ReactNode
+ * Drawer Component with WCAG focus trapping and escape dismissal
  */
 export function Drawer({
   isOpen,
@@ -26,29 +17,61 @@ export function Drawer({
   className = ''
 }) {
   const drawerRef = useRef(null);
+  const previousActiveElement = useRef(null);
 
-  // Close on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen && !primaryLoading) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, primaryLoading, onClose]);
-
-  // Lock background scroll when open
+  // Focus management: capture previous focus, set focus inside drawer, restore on close
   useEffect(() => {
     if (isOpen) {
+      previousActiveElement.current = document.activeElement;
       document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        const focusable = drawerRef.current?.querySelectorAll(
+          'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable && focusable.length > 0) {
+          focusable[0].focus();
+        }
+      }, 50);
     } else {
       document.body.style.overflow = '';
+      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+        previousActiveElement.current.focus();
+      }
     }
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // Close on Escape & Tab key trapping
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isOpen) return;
+      if (e.key === 'Escape' && !primaryLoading) {
+        onClose();
+      } else if (e.key === 'Tab') {
+        const focusable = drawerRef.current?.querySelectorAll(
+          'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable || focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, primaryLoading, onClose]);
 
   if (!isOpen) return null;
 
@@ -62,6 +85,7 @@ export function Drawer({
       }}
       role="dialog"
       aria-modal="true"
+      aria-label={title}
     >
       <div className={`mf-drawer ${className}`} ref={drawerRef}>
         <div className="mf-drawer-header">

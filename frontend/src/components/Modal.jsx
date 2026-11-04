@@ -1,19 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import Button from './Button';
 
 /**
- * Modal Component
- * Props:
- * - isOpen: boolean
- * - onClose: function
- * - title: string
- * - actionLabel: string
- * - onAction: function
- * - actionVariant: 'primary' | 'danger-solid' | 'secondary'
- * - actionLoading: boolean
- * - cancelLabel: string
- * - children: ReactNode
+ * Modal Component with WCAG focus trapping and escape dismissal
  */
 export function Modal({
   isOpen,
@@ -27,26 +17,60 @@ export function Modal({
   children,
   className = ''
 }) {
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen && !actionLoading) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, actionLoading, onClose]);
+  const modalRef = useRef(null);
+  const previousActiveElement = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
+      previousActiveElement.current = document.activeElement;
       document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        const focusable = modalRef.current?.querySelectorAll(
+          'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable && focusable.length > 0) {
+          focusable[0].focus();
+        }
+      }, 50);
     } else {
       document.body.style.overflow = '';
+      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+        previousActiveElement.current.focus();
+      }
     }
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isOpen) return;
+      if (e.key === 'Escape' && !actionLoading) {
+        onClose();
+      } else if (e.key === 'Tab') {
+        const focusable = modalRef.current?.querySelectorAll(
+          'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable || focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, actionLoading, onClose]);
 
   if (!isOpen) return null;
 
@@ -60,8 +84,9 @@ export function Modal({
       }}
       role="dialog"
       aria-modal="true"
+      aria-label={title}
     >
-      <div className={`mf-modal ${className}`}>
+      <div className={`mf-modal ${className}`} ref={modalRef}>
         <div className="mf-modal-header">
           <h2 className="mf-modal-title">{title}</h2>
           <button

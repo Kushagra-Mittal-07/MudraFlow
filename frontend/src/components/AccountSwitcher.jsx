@@ -93,10 +93,18 @@ export function AccountSwitcher({ onOpenNewAccount, className = '' }) {
                 <div
                   key={acc.account_id}
                   role="option"
+                  tabIndex={0}
                   aria-selected={isSelected}
                   onClick={() => {
                     switchAccount(acc.account_id);
                     setOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      switchAccount(acc.account_id);
+                      setOpen(false);
+                    }
                   }}
                   style={{
                     padding: '10px 12px',

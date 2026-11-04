@@ -549,7 +549,11 @@
   padding: 0 12px;
 }
 
-/* Responsive sidebar (< 1024px) */
+/* Responsive sidebar & layout (< 1024px) */
+.mf-menu-btn {
+  display: none !important;
+}
+
 @media (max-width: 1023px) {
   .mf-sidebar {
     transform: translateX(-100%) !important;
@@ -561,21 +565,50 @@
     margin-left: 0 !important;
     width: 100% !important;
   }
+  .mf-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
   .mf-home-col-left,
   .mf-home-col-right {
     grid-column: span 12 !important;
   }
 }
+
+/* Customer bottom tab bar hidden by default, visible under 768px */
+.mf-bottom-tab-bar {
+  display: none !important;
+}
+
 .mf-mobile-only {
   display: none;
 }
 
-@media (max-width: 639px) {
+/* Under 768px: Mobile layouts, stacked cards, full width drawers */
+@media (max-width: 767px) {
+  .mf-bottom-tab-bar {
+    display: flex !important;
+  }
   .mf-desktop-only {
     display: none !important;
   }
   .mf-mobile-only {
     display: block !important;
+  }
+  .mf-main-wrapper main {
+    padding: 16px !important;
+    padding-bottom: 80px !important;
+  }
+  .mf-panel {
+    padding: 20px !important;
+  }
+  .mf-radio-tiles {
+    grid-template-columns: 1fr !important;
+  }
+  .mf-drawer {
+    max-width: 100% !important;
   }
   .mf-ledger-table,
   .mf-ledger-table thead,

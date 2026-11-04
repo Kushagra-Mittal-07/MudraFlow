@@ -129,9 +129,10 @@ export function AppShell({ title = 'Overview', children }) {
 
           <button
             type="button"
-            className="mf-mobile-only"
+            className="mf-menu-btn"
             onClick={() => setMobileMenuOpen(false)}
             style={{ color: '#FFFFFF', padding: '4px' }}
+            aria-label="Close navigation menu"
           >
             <X size={20} />
           </button>
@@ -315,7 +316,7 @@ export function AppShell({ title = 'Overview', children }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <button
               type="button"
-              className="mf-mobile-only"
+              className="mf-menu-btn"
               onClick={() => setMobileMenuOpen(true)}
               style={{ padding: '6px' }}
               aria-label="Open navigation menu"
@@ -391,7 +392,7 @@ export function AppShell({ title = 'Overview', children }) {
         {/* Customer Bottom Tab Bar (< 768px) */}
         {!isStaff && (
           <nav
-            className="mf-mobile-only"
+            className="mf-bottom-tab-bar"
             style={{
               position: 'fixed',
               bottom: 0,
@@ -421,6 +422,7 @@ export function AppShell({ title = 'Overview', children }) {
                 <NavLink
                   key={tab.to}
                   to={tab.to}
+                  aria-current={isActive ? 'page' : undefined}
                   style={{
                     flex: 1,
                     display: 'flex',
