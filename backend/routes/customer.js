@@ -509,6 +509,16 @@ router.get('/transactions', asyncHandler(async (req, res) => {
              t.receiver_name, t.amount, t.mode, t.txn_type, t.remarks, t.created_at,
              fa.account_number AS from_account_number,
              ta.account_number AS to_account_number,
+             CASE WHEN t.to_account_id = ? THEN 'credit' ELSE 'debit' END AS direction,
+             CASE
+               WHEN t.txn_type = 'OPENING_BALANCE' THEN 'Opening deposit'
+               WHEN t.txn_type = 'LOAN_CREDIT' THEN 'Loan disbursement'
+               WHEN t.txn_type = 'FD_LOCK' THEN 'Fixed deposit locked'
+               WHEN t.txn_type = 'FD_MATURITY' THEN 'Fixed deposit matured'
+               WHEN t.txn_type = 'TRANSFER' AND t.to_account_id = ? THEN CONCAT('Transfer from ', COALESCE(fa.account_number, 'account'))
+               WHEN t.txn_type = 'TRANSFER' AND t.from_account_id = ? THEN CONCAT('Transfer to ', COALESCE(t.receiver_name, ta.account_number, 'account'))
+               ELSE COALESCE(t.remarks, t.txn_type)
+             END AS description,
              ? - COALESCE(
                SUM(
                  CASE WHEN t.to_account_id = ? THEN t.amount ELSE 0 END
@@ -526,6 +536,7 @@ router.get('/transactions', asyncHandler(async (req, res) => {
   `;
 
   const params = [
+    accountId, accountId, accountId,
     parseFloat(acct.balance), accountId, accountId,
     accountId, accountId
   ];

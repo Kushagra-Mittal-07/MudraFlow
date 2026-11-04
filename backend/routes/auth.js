@@ -202,8 +202,8 @@ router.post('/staff/auth/login', asyncHandler(async (req, res) => {
   }
 
   const [[employee]] = await pool.query(
-    `SELECT emp_id, password_hash, role, branch_id FROM employee WHERE emp_id = ?`,
-    [emp_id]
+    `SELECT emp_id, password_hash, role, branch_id FROM employee WHERE emp_id = ? OR emp_id = CONCAT('EMP', LPAD(?, 3, '0'))`,
+    [emp_id, emp_id]
   );
 
   if (!employee) {

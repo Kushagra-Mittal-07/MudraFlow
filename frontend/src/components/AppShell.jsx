@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Home as HomeIcon,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useActiveAccount } from '../context/ActiveAccountContext';
+import { apiRequest } from '../lib/api';
 import AccountSwitcher from './AccountSwitcher';
 import Banner from './Banner';
 import Tag from './Tag';
@@ -30,6 +31,22 @@ export function AppShell({ title = 'Overview', children }) {
   const isStaff = role === 'staff';
   const sidebarBg = isStaff ? 'var(--green-950)' : 'var(--green-900)';
   const isFrozen = activeAccount?.status === 'FROZEN';
+  const [staffCounts, setStaffCounts] = useState({ pending_approvals: 0, fd_due_count: 0 });
+
+  useEffect(() => {
+    if (isStaff) {
+      apiRequest('/staff/overview')
+        .then(res => {
+          if (res.ok && res.data) {
+            setStaffCounts({
+              pending_approvals: res.data.pending_approvals || 0,
+              fd_due_count: res.data.fd_due_count || 0
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isStaff, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -174,6 +191,22 @@ export function AppShell({ title = 'Overview', children }) {
               <NavLink to="/staff/approvals" style={navLinkStyle} onClick={() => setMobileMenuOpen(false)}>
                 <FileCheck size={18} strokeWidth={1.5} />
                 <span>Approvals</span>
+                {staffCounts.pending_approvals > 0 && (
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      backgroundColor: 'var(--gold)',
+                      color: 'var(--green-950)',
+                      borderRadius: '2px',
+                      padding: '1px 6px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-mono)'
+                    }}
+                  >
+                    {staffCounts.pending_approvals}
+                  </span>
+                )}
               </NavLink>
               <NavLink to="/staff/customers" style={navLinkStyle} onClick={() => setMobileMenuOpen(false)}>
                 <Users size={18} strokeWidth={1.5} />
@@ -186,6 +219,22 @@ export function AppShell({ title = 'Overview', children }) {
               <NavLink to="/staff/fd" style={navLinkStyle} onClick={() => setMobileMenuOpen(false)}>
                 <PiggyBank size={18} strokeWidth={1.5} />
                 <span>FD maturities</span>
+                {staffCounts.fd_due_count > 0 && (
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      backgroundColor: 'var(--gold)',
+                      color: 'var(--green-950)',
+                      borderRadius: '2px',
+                      padding: '1px 6px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-mono)'
+                    }}
+                  >
+                    {staffCounts.fd_due_count}
+                  </span>
+                )}
               </NavLink>
             </>
           )}

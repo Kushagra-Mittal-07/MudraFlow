@@ -51,17 +51,12 @@ function RequireStaff({ children }) {
   return children;
 }
 
-// Placeholder for staff overview
-function StaffOverviewPlaceholder() {
-  return (
-    <AppShell title="Staff Overview">
-      <div className="mf-panel">
-        <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>Staff Portal Active</h3>
-        <p className="mf-helper">Phase 5 will implement full staff oversight screens.</p>
-      </div>
-    </AppShell>
-  );
-}
+// Staff pages
+import StaffOverview from './pages/staff/Overview';
+import StaffApprovals from './pages/staff/Approvals';
+import StaffCustomers from './pages/staff/Customers';
+import StaffTransactions from './pages/staff/Transactions';
+import StaffFdMaturities from './pages/staff/FdMaturities';
 
 // Placeholder for yet-to-be-built customer subroutes (Phase 4 Part C)
 function PlaceholderPage({ title }) {
@@ -156,7 +151,39 @@ export function AppRoutes() {
         path="/staff"
         element={
           <RequireStaff>
-            <StaffOverviewPlaceholder />
+            <StaffOverview />
+          </RequireStaff>
+        }
+      />
+      <Route
+        path="/staff/approvals"
+        element={
+          <RequireStaff>
+            <StaffApprovals />
+          </RequireStaff>
+        }
+      />
+      <Route
+        path="/staff/customers"
+        element={
+          <RequireStaff>
+            <StaffCustomers />
+          </RequireStaff>
+        }
+      />
+      <Route
+        path="/staff/transactions"
+        element={
+          <RequireStaff>
+            <StaffTransactions />
+          </RequireStaff>
+        }
+      />
+      <Route
+        path="/staff/fd"
+        element={
+          <RequireStaff>
+            <StaffFdMaturities />
           </RequireStaff>
         }
       />
