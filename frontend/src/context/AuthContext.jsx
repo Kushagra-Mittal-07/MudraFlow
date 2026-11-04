@@ -1,33 +1,56 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { apiRequest } from '../lib/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem('mf_token'));
-  const [role, setRole] = useState(() => localStorage.getItem('mf_role'));
-  const [user, setUser] = useState(() => {
+  const location = useLocation();
+  const isStaffRoute = location.pathname.startsWith('/staff');
+
+  const getInitialToken = (staff) => {
+    if (staff) {
+      return localStorage.getItem('mf_staff_token') || (localStorage.getItem('mf_role') === 'staff' ? localStorage.getItem('mf_token') : null);
+    }
+    return localStorage.getItem('mf_customer_token') || (localStorage.getItem('mf_role') === 'customer' ? localStorage.getItem('mf_token') : null);
+  };
+
+  const getInitialRole = (staff) => {
+    if (staff) {
+      return localStorage.getItem('mf_staff_role') || (localStorage.getItem('mf_role') === 'staff' ? 'staff' : null);
+    }
+    return localStorage.getItem('mf_customer_role') || (localStorage.getItem('mf_role') === 'customer' ? 'customer' : null);
+  };
+
+  const getInitialUser = (staff) => {
     try {
-      return JSON.parse(localStorage.getItem('mf_user') || 'null');
+      const raw = staff
+        ? (localStorage.getItem('mf_staff_user') || (localStorage.getItem('mf_role') === 'staff' ? localStorage.getItem('mf_user') : null))
+        : (localStorage.getItem('mf_customer_user') || (localStorage.getItem('mf_role') === 'customer' ? localStorage.getItem('mf_user') : null));
+      return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
     }
-  });
+  };
 
+  const [token, setToken] = useState(() => getInitialToken(isStaffRoute));
+  const [role, setRole] = useState(() => getInitialRole(isStaffRoute));
+  const [user, setUser] = useState(() => getInitialUser(isStaffRoute));
   const [loading, setLoading] = useState(false);
 
-  // Sync to localStorage
+  // Synchronize active credentials when switching between /staff and /app
   useEffect(() => {
-    if (token) {
-      localStorage.setItem('mf_token', token);
-      localStorage.setItem('mf_role', role);
-      localStorage.setItem('mf_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('mf_token');
-      localStorage.removeItem('mf_role');
-      localStorage.removeItem('mf_user');
+    const activeIsStaff = location.pathname.startsWith('/staff');
+    const expectedToken = getInitialToken(activeIsStaff);
+    const expectedRole = getInitialRole(activeIsStaff);
+    const expectedUser = getInitialUser(activeIsStaff);
+
+    if (expectedToken !== token || expectedRole !== role) {
+      setToken(expectedToken);
+      setRole(expectedRole);
+      setUser(expectedUser);
     }
-  }, [token, role, user]);
+  }, [location.pathname]);
 
   const loginCustomer = async (customerId, password) => {
     setLoading(true);
@@ -38,20 +61,21 @@ export function AuthProvider({ children }) {
       });
 
       if (res.ok && res.data?.token) {
+        const u = {
+          id: res.data.customer_id,
+          name: res.data.full_name,
+          role: 'customer'
+        };
+        localStorage.setItem('mf_customer_token', res.data.token);
+        localStorage.setItem('mf_customer_role', 'customer');
+        localStorage.setItem('mf_customer_user', JSON.stringify(u));
         localStorage.setItem('mf_token', res.data.token);
         localStorage.setItem('mf_role', 'customer');
-        localStorage.setItem('mf_user', JSON.stringify({
-          id: res.data.customer_id,
-          name: res.data.full_name,
-          role: 'customer'
-        }));
+        localStorage.setItem('mf_user', JSON.stringify(u));
+
         setToken(res.data.token);
         setRole('customer');
-        setUser({
-          id: res.data.customer_id,
-          name: res.data.full_name,
-          role: 'customer'
-        });
+        setUser(u);
         return res.data;
       }
     } finally {
@@ -68,22 +92,22 @@ export function AuthProvider({ children }) {
       });
 
       if (res.ok && res.data?.token) {
+        const u = {
+          id: res.data.emp_id,
+          name: res.data.full_name,
+          branch_name: res.data.branch_name,
+          role: 'staff'
+        };
+        localStorage.setItem('mf_staff_token', res.data.token);
+        localStorage.setItem('mf_staff_role', 'staff');
+        localStorage.setItem('mf_staff_user', JSON.stringify(u));
         localStorage.setItem('mf_token', res.data.token);
         localStorage.setItem('mf_role', 'staff');
-        localStorage.setItem('mf_user', JSON.stringify({
-          id: res.data.emp_id,
-          name: res.data.full_name,
-          branch_name: res.data.branch_name,
-          role: 'staff'
-        }));
+        localStorage.setItem('mf_user', JSON.stringify(u));
+
         setToken(res.data.token);
         setRole('staff');
-        setUser({
-          id: res.data.emp_id,
-          name: res.data.full_name,
-          branch_name: res.data.branch_name,
-          role: 'staff'
-        });
+        setUser(u);
         return res.data;
       }
     } finally {
@@ -92,6 +116,19 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    const isStaff = role === 'staff';
+    if (isStaff) {
+      localStorage.removeItem('mf_staff_token');
+      localStorage.removeItem('mf_staff_role');
+      localStorage.removeItem('mf_staff_user');
+    } else {
+      localStorage.removeItem('mf_customer_token');
+      localStorage.removeItem('mf_customer_role');
+      localStorage.removeItem('mf_customer_user');
+    }
+    localStorage.removeItem('mf_token');
+    localStorage.removeItem('mf_role');
+    localStorage.removeItem('mf_user');
     setToken(null);
     setRole(null);
     setUser(null);

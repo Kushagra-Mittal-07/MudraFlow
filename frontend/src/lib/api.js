@@ -12,8 +12,16 @@ export async function apiRequest(endpoint, options = {}) {
     ...options.headers
   };
 
-  // Attach token from options or storage
-  const authToken = token || localStorage.getItem('mf_token');
+  // Attach token from options or role-aware storage
+  const isStaffCall = endpoint.startsWith('/staff');
+  let authToken = token;
+  if (!authToken) {
+    if (isStaffCall) {
+      authToken = localStorage.getItem('mf_staff_token') || localStorage.getItem('mf_token');
+    } else {
+      authToken = localStorage.getItem('mf_customer_token') || localStorage.getItem('mf_token');
+    }
+  }
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
