@@ -146,7 +146,7 @@ This script provides a step-by-step presentation walkthrough for presentation da
    - Submit application. Shows status `PENDING` in Applications table.
 2. Log in as Staff:
    - Open a new tab or log out and visit `http://localhost:5173/staff/login`.
-   - Login ID: `1` (or `EMP001`), Password: `StaffPassword@123`.
+   - Login ID: `1` (or `EMP001`), Password: `Demo@123`.
 3. Staff Overview:
    - Show the gold `STAFF` badge, dark theme, and the Approvals badge showing `1 Pending`.
    - Click **Approvals** -> Loans tab.
