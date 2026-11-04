@@ -220,3 +220,4 @@ This script provides a step-by-step presentation walkthrough for presentation da
   *A:* Deadlocks occur when Session A locks account 1 and waits for 2, while Session B locks 2 and waits for 1. `sp_transfer` always acquires row locks in ascending order (`LEAST(from_id, to_id)` then `GREATEST(from_id, to_id)`). Circular wait is mathematically impossible.
 - **Q: How does the ledger guarantee balance integrity?**
   *A:* The ledger is append-only. The balance after every transaction is verified using SQL window function `SUM(delta) OVER (PARTITION BY account_id ORDER BY created_at ASC, txn_id ASC)`.
+
