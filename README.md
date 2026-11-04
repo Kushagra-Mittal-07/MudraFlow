@@ -1,185 +1,302 @@
-# MudraFlow
+<div align="center">
 
-> A DBMS-centric online banking system engineered with **MySQL 8 (InnoDB)**, **Node.js (Express)**, and **React (Vite)**.
-> In MudraFlow, the database is the star: financial invariants, balance mutations, and concurrency controls are enforced directly in the database engine.
+# 🏛️ MudraFlow
+### Enterprise-Grade Online Banking & Core DBMS Engine
 
----
+*A secure, relational database–first core banking system engineered with **MySQL 8 (InnoDB)**, **Node.js (Express)**, and **React (Vite)**.*
 
-## Key Engineering Highlights
-
-1. **Balances Change Only Inside Stored Procedures:**
-   - The application backend connects as a restricted MySQL user `mudraflow_app`.
-   - `mudraflow_app` has **zero** `UPDATE` permission on `account.balance`.
-   - All balance changes execute exclusively through stored procedures (`sp_register_customer`, `sp_open_account`, `sp_transfer`, `sp_create_fd`, `sp_approve_loan`, `sp_decide_service_request`, `sp_process_maturities`).
-
-2. **Concurrency & Deadlock Prevention (Pessimistic Locking):**
-   - Money transfers use `SELECT ... FOR UPDATE` with locks acquired in consistent ascending account order (`LEAST(from_id, to_id)` then `GREATEST(from_id, to_id)`).
-   - This eliminates race conditions and circular waits (deadlocks), ensuring accounts never go negative even under high concurrent load.
-
-3. **Regulatory Audit Logging & Freeze Protection:**
-   - Trigger `trg_account_audit` logs every balance or status change to the append-only `account_audit` table.
-   - Trigger `trg_txn_block_frozen` prevents any debits or credits on frozen accounts.
-
-4. **Passbook UI Design:**
-   - Built to specification with zero external UI kits, zero gradients, zero emoji, and a clean tabular layout.
-   - Fully responsive across 360px (mobile cards & bottom tab bar), 768px (off-canvas drawer), and 1280px (full desktop view).
-   - Print-optimized stylesheets for transaction receipts and account statements.
+[![MySQL 8](https://img.shields.io/badge/MySQL-8.0_InnoDB-00758F?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 ---
 
-## Project Structure
+</div>
 
+## 📌 Executive Summary
+
+Most modern web applications execute financial invariants, interest calculations, and ledger updates in application-layer memory. In contrast, **MudraFlow** implements a **database-first architecture**:
+
+> **The Database is the Star.** 
+> All balances, transfers, loans, fixed deposits, and audit entries are strictly encapsulated inside **MySQL 8 stored procedures, deterministic functions, and triggers**.
+> The application backend connects via a restricted runtime user (`mudraflow_app`) that possesses **zero** `UPDATE` permission on account balances. It is mathematically impossible for application bugs or SQL injections to tamper with balances directly.
+
+---
+
+## 📸 Visual Showcase
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%" align="center">
+        <b>Customer Passbook Dashboard (1280px Desktop)</b><br/>
+        <img src="docs/screenshots/03-home-desktop-1280px.png" alt="Customer Dashboard" width="100%"/>
+      </td>
+      <td width="50%" align="center">
+        <b>Staff Core Operations Portal</b><br/>
+        <img src="docs/screenshots/p5-01-staff-overview.png" alt="Staff Overview" width="100%"/>
+      </td>
+    </tr>
+    <tr>
+      <td width="50%" align="center">
+        <b>Atomic Transfer Slip & Live Review</b><br/>
+        <img src="docs/screenshots/p4c-03-transfer-review.png" alt="Transfer Review" width="100%"/>
+      </td>
+      <td width="50%" align="center">
+        <b>Official Transaction Slip (Print-Ready)</b><br/>
+        <img src="docs/screenshots/p4c-06-transfer-receipt.png" alt="Transfer Receipt" width="100%"/>
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## ⚡ Key Technical Highlights
+
+### 🛡️ 1. Least Privilege Database Security
+The application connects exclusively through MySQL user `mudraflow_app`:
+```sql
+-- Runtime user grant policy (db/01_schema.sql)
+GRANT SELECT ON mudraflow.* TO 'mudraflow_app'@'localhost';
+GRANT EXECUTE ON mudraflow.* TO 'mudraflow_app'@'localhost';
+-- NOTICE: Zero UPDATE/DELETE privileges on financial tables!
 ```
+
+### 🔒 2. Pessimistic Concurrency & Deadlock Avoidance
+To prevent race conditions when two concurrent transfers target the same funds, `sp_transfer` acquires locks using `SELECT ... FOR UPDATE` ordered strictly by `account_id` ascending:
+```sql
+-- Ordered row lock acquisition ensures zero circular wait deadlocks
+SELECT balance INTO v_from_balance FROM account 
+WHERE account_id = LEAST(p_from_acc, p_to_acc) FOR UPDATE;
+
+SELECT balance INTO v_to_balance FROM account 
+WHERE account_id = GREATEST(p_from_acc, p_to_acc) FOR UPDATE;
+```
+> **Concurrency Guarantee:** When two ₹8,000 transfers attempt to debit a ₹10,000 account at the same millisecond, exactly one succeeds; the second rolls back safely with `Insufficient balance`. The balance **never** drops below zero.
+
+### 📜 3. Regulatory Audit Logging & Freeze Protection
+- **Trigger `trg_account_audit`:** Automatically logs every status transition (ACTIVE $\leftrightarrow$ FROZEN) and balance shift to an append-only audit ledger (`account_audit`).
+- **Trigger `trg_txn_block_frozen`:** Database-level gatekeeper that rejects any debit or credit attempted against a frozen account.
+
+### 🚀 4. Composite B-Tree Index Optimization
+Tested over 50,000 ledger rows (`db/tests/explain.sql`):
+- **Full Table Scan (Without Index):** Examined **50,000 rows** + disk `filesort`.
+- **Composite Index `(from_account_id, created_at)`:** Examined **112 rows** (**446x speedup**) with reverse B-Tree scan, eliminating `filesort` entirely.
+
+---
+
+## 🛠️ System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client ["Client Layer (Passbook UI)"]
+        UI_Cust["Customer Portal\n(React 18 + Vite)"]
+        UI_Staff["Staff Operations\n(Dense Ledger UI)"]
+    end
+
+    subgraph API ["Backend Gateway (Node.js / Express)"]
+        Auth["Auth & JWT Gate\n(bcrypt + 5-attempt lockout)"]
+        Router["Thin Express Router\n(Zero Balance Math)"]
+    end
+
+    subgraph DB ["Core DBMS Layer (MySQL 8 InnoDB)"]
+        Pool["mudraflow_app Connection Pool"]
+        
+        subgraph Procedures ["Stored Procedures (Source of Truth)"]
+            sp_reg["sp_register_customer"]
+            sp_tx["sp_transfer (FOR UPDATE)"]
+            sp_fd["sp_create_fd"]
+            sp_ln["sp_approve_loan"]
+            sp_mat["sp_process_maturities"]
+        end
+
+        subgraph Triggers ["Integrity Triggers"]
+            trg_audit["trg_account_audit"]
+            trg_freeze["trg_txn_block_frozen"]
+        end
+
+        subgraph Storage ["InnoDB Tables & Ledger"]
+            acct[("account (Balances)")]
+            txn[("txn (Append-Only)")]
+            audit[("account_audit")]
+        end
+    end
+
+    UI_Cust -->|REST / Bearer Token| Auth
+    UI_Staff -->|REST / Bearer Token| Auth
+    Auth --> Router
+    Router --> Pool
+    Pool --> Procedures
+    Procedures -->|Atomically Mutates| acct
+    Procedures -->|Records| txn
+    acct -.->|Fires| Triggers
+    Triggers -.->|Logs to| audit
+```
+
+---
+
+## 📂 Project Structure
+
+```text
 mudraflow/
-├── db/                       # Database scripts and benchmarks
-│   ├── 01_schema.sql         # 10 tables, constraints, users, and grants
-│   ├── 02_programs.sql       # Stored procedures, functions, triggers, views
-│   ├── seed.js               # Seed script with bcrypt-hashed passwords
-│   └── tests/                # Concurrency and EXPLAIN benchmark tests
-├── backend/                  # Thin Express API layer
-│   ├── server.js             # Server entry point
-│   ├── db.js                 # MySQL connection pool (mudraflow_app)
-│   ├── routes/               # auth, customer, staff routes
-│   └── tests/                # Automated API gate tests (12/12)
+├── db/                       # Database Source of Truth
+│   ├── 01_schema.sql         # 10 Tables, Constraints, CHECKs, Users & Grants
+│   ├── 02_programs.sql       # Stored Procedures, Functions, Triggers, Views
+│   ├── seed.js               # Database seeding script (bcrypt-hashed passwords)
+│   └── tests/                # Concurrency (D2) & EXPLAIN (D4) benchmarks
+├── backend/                  # Thin Express API Layer
+│   ├── server.js             # API entry point & error handler
+│   ├── db.js                 # MySQL2 connection pool (mudraflow_app)
+│   ├── middleware/           # Role-based JWT authentication
+│   ├── routes/               # auth.js, customer.js, staff.js
+│   └── tests/                # Automated gate test suite (12/12 passing)
 ├── frontend/                 # React 18 + Vite Passbook UI
 │   ├── src/components/       # AppShell, LedgerTable, Slip, Drawers, Modals
-│   ├── src/pages/            # Customer & Staff portal pages
-│   ├── src/styles/           # Design tokens, responsive, and print CSS
-│   └── tests/                # Formatters and currency unit tests (7/7)
-├── spec/                     # Complete specifications (01 to 07)
-└── docs/                     # Presentation demo script & EXPLAIN benchmark
+│   ├── src/pages/customer/   # Home, Transfer, Payees, History, FD, Services
+│   ├── src/pages/staff/      # Overview, Approvals, Customers, Transactions, FDs
+│   ├── src/styles/           # Design tokens, responsive styles, print.css
+│   └── tests/                # Currency formatters & amount in words tests
+├── spec/                     # System specifications (01 through 07)
+└── docs/                     # Presentation demo script & EXPLAIN benchmarks
 ```
 
 ---
 
-## Prerequisites
+## 🚦 Getting Started
 
-- **MySQL Server 8.0+** running locally (InnoDB storage engine)
-- **Node.js 18+** (LTS recommended)
-- **npm 9+**
+### Prerequisites
+- **MySQL Server 8.0+** running locally
+- **Node.js 18+** & **npm 9+**
+- **Git**
 
 ---
 
-## Installation & Setup
+### Step 1: Clone Repository & Install Dependencies
 
-### 1. Clone & Install Dependencies
+```bash
+# Clone the repository
+git clone https://github.com/Kushagra-Mittal-07/MudraFlow.git
+cd MudraFlow
 
-```powershell
-# In project root:
-cd backend
-npm install
+# Install backend dependencies
+cd backend && npm install
 
-cd ../frontend
-npm install
-
+# Install frontend dependencies
+cd ../frontend && npm install
 cd ..
 ```
 
-### 2. Configure Environment Variables
+---
 
-Create `.env` in the project root and `backend/.env`:
+### Step 2: Configure Environment Variables
+
+Create `.env` in the root folder and in `backend/.env`:
 
 ```env
-# Database Configuration
+# Database Credentials
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=mudraflow
 DB_USER=mudraflow_app
 DB_PASSWORD=MudraAppPass@123
 
-# Admin credentials for schema creation/migrations
+# Admin credentials for schema creation & testing
 DB_ADMIN_USER=root
-DB_ADMIN_PASSWORD=your_root_password
+DB_ADMIN_PASSWORD=your_mysql_root_password
 
 # Application Settings
 PORT=3000
-JWT_SECRET=mudraflow_demo_jwt_secret_key_change_in_production
+JWT_SECRET=mudraflow_super_secret_jwt_key_change_in_production
 NODE_ENV=development
 ```
 
-### 3. Initialize the Database & Seed Data
+---
 
-Run the database setup scripts in order using MySQL client:
+### Step 3: Initialize MySQL Database & Run Seed Script
 
-```powershell
-# 1. Create schema and database users (run as root)
+Execute the SQL scripts in order using MySQL client:
+
+```bash
+# 1. Initialize schema, tables, and least-privilege users
 mysql -u root -p < db/01_schema.sql
 
-# 2. Create procedures, functions, triggers, and views
+# 2. Deploy stored procedures, deterministic functions, and triggers
 mysql -u root -p < db/02_programs.sql
 
-# 3. Populate seed data with hashed passwords
+# 3. Populate database with seed customers, accounts, and ledger entries
 node db/seed.js
 ```
 
 ---
 
-## Running the Application
+### Step 4: Run the Application
 
-### Start the Backend API (Port 3000)
-
-```powershell
+In your first terminal, start the **Backend API**:
+```bash
 cd backend
 node server.js
+# API running at http://localhost:3000
 ```
-The API server starts at `http://localhost:3000`.
 
-### Start the Frontend Dev Server (Port 5173)
-
-In a separate terminal:
-
-```powershell
+In your second terminal, start the **Frontend UI**:
+```bash
 cd frontend
 npm run dev
+# Web app running at http://localhost:5173
 ```
-Open your browser and navigate to `http://localhost:5173`.
+
+Navigate to `http://localhost:5173` in your browser.
 
 ---
 
-## Running Verification Tests
+## 🔑 Demo Credentials
 
-### 1. Frontend Unit Tests (7/7)
-Tests Indian currency grouping (`formatMoney`), amount-in-words, and date masking:
-```powershell
+| Role | Username / ID | Password | Demo OTP | Description |
+|---|---|---|---|---|
+| **Customer** | `10000001` *(Aarav Patel)* | `Password@123` | `123456` | Active Savings & Current accounts |
+| **Customer** | `10000002` *(Priya Verma)* | `Password@123` | `123456` | Beneficiary for instant transfers |
+| **Customer** | `10000003` *(Rahul Sharma)* | `Password@123` | `123456` | Has active and matured fixed deposits |
+| **Staff** | `1` *(or `EMP001`)* | `StaffPassword@123` | N/A | Bank Officer with approval privileges |
+
+---
+
+## 🧪 Automated Test Suites & Verification
+
+MudraFlow includes comprehensive verification across database, API, and UI layers:
+
+```bash
+# 1. Frontend Unit Tests (7/7 tests passed)
 npm test --prefix frontend
-```
 
-### 2. Backend Automated API Gate Tests (12/12)
-Validates auth lockout, access controls, transfers, staff approvals, and ledger invariants:
-```powershell
+# 2. Backend API Gate Tests (12/12 tests passed)
 node backend/tests/api-tests.js
-```
 
-### 3. Concurrency Race Condition Test (Test D2)
-Simultaneously executes two ₹8,000 transfers on an account with ₹10,000 balance:
-```powershell
+# 3. Concurrency Test D2 (Pessimistic row locking verification)
 node db/tests/concurrency.js
-```
-*Expected result:* Exactly one transfer succeeds; the second waits for the lock and fails with `Insufficient balance`. Balance never goes negative.
 
-### 4. Database Indexing Benchmark (Test D4)
-Benchmarks full-table scan vs. composite B-Tree index over 50,000 rows:
-```powershell
-mysql -u root -p < db/tests/explain.sql
+# 4. Production Frontend Build (0 errors)
+npm run build --prefix frontend
 ```
-*Result:* Query inspection rows drop from 50,000 to 112 (**446x speedup**), eliminating filesort.
 
 ---
 
-## Demo Credentials
+## 🎓 8-Minute Presentation Script & Viva Walkthrough
 
-### Customer Login (`/login`)
-- **Customer ID:** `10000001` (Aarav Patel) or any seed customer (`10000001` to `10000008`)
-- **Password:** `Password@123`
-- **Demo OTP:** `123456`
-
-### Staff Login (`/staff/login`)
-- **Staff ID:** `1` (or `EMP001`)
-- **Password:** `StaffPassword@123`
+A complete, minute-by-minute presentation guide for viva examiners is available at [`docs/demo-script.md`](docs/demo-script.md), covering:
+1. Architectural defense of database-level balance encapsulation
+2. End-to-end customer registration & verification
+3. Atomic funds transfer and print-ready receipts
+4. Live terminal concurrency demonstration
+5. Fixed deposit calculations and staff loan credit workflows
+6. MySQL `EXPLAIN` query plan analysis
 
 ---
 
-## Presentation & Viva Walkthrough
+## 📄 License & Authors
 
-See [`docs/demo-script.md`](file:///c:/Users/Kushagra/Downloads/mudraflow-project-start/mudraflow/docs/demo-script.md) for a comprehensive, 8-minute presentation guide covering registration, transfers, concurrency demonstrations, fixed deposits, staff approvals, and index optimization.
-
+- **Author:** [Kushagra Mittal](https://github.com/Kushagra-Mittal-07)
+- **Project:** MudraFlow Core Banking Engine (DBMS Project)
+- **License:** Open-source under the [MIT License](LICENSE).
