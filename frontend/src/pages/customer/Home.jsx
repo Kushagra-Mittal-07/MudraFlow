@@ -332,7 +332,7 @@ export function Home() {
                           marginTop: '4px'
                         }}
                       >
-                        •••• {acc.last4 || (acc.account_number ? acc.account_number.slice(-4) : '----')}
+                        {acc.account_number || ('•••• ' + acc.last4)}
                       </div>
                     </div>
                   );

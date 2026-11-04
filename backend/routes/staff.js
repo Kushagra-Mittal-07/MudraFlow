@@ -205,7 +205,8 @@ router.get('/staff/customers', asyncHandler(async (req, res) => {
   const { q } = req.query;
   let sql = `
     SELECT c.customer_id, c.full_name, c.email, c.phone, c.pan, c.dob, c.address, c.created_at,
-           COUNT(a.account_id) AS account_count
+           COUNT(a.account_id) AS account_count,
+           MIN(a.account_number) AS primary_account
     FROM customer c
     LEFT JOIN account a ON c.customer_id = a.customer_id
   `;

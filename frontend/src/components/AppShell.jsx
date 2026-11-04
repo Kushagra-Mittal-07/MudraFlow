@@ -18,13 +18,15 @@ import { useAuth } from '../context/AuthContext';
 import { useActiveAccount } from '../context/ActiveAccountContext';
 import { apiRequest } from '../lib/api';
 import AccountSwitcher from './AccountSwitcher';
+import OpenAccountDrawer from './OpenAccountDrawer';
 import Banner from './Banner';
 import Tag from './Tag';
 
 export function AppShell({ title = 'Overview', children }) {
   const { user, role, logout } = useAuth();
-  const { activeAccount } = useActiveAccount();
+  const { activeAccount, refreshAccounts } = useActiveAccount();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openAccountDrawer, setOpenAccountDrawer] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -334,7 +336,17 @@ export function AppShell({ title = 'Overview', children }) {
 
           <div>
             {!isStaff ? (
-              <AccountSwitcher />
+              <>
+                <AccountSwitcher onOpenNewAccount={() => setOpenAccountDrawer(true)} />
+                <OpenAccountDrawer
+                  isOpen={openAccountDrawer}
+                  onClose={() => setOpenAccountDrawer(false)}
+                  onSuccess={() => {
+                    setOpenAccountDrawer(false);
+                    refreshAccounts?.();
+                  }}
+                />
+              </>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)' }}>

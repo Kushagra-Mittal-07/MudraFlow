@@ -59,7 +59,7 @@ export function AccountSwitcher({ onOpenNewAccount, className = '' }) {
         />
         <span style={{ fontWeight: 600 }}>{activeAccount.account_type}</span>
         <span className="tabular-nums" style={{ color: 'var(--ink-2)' }}>
-          ••••{activeAccount.last4 || (activeAccount.account_number ? activeAccount.account_number.slice(-4) : '----')}
+          {activeAccount.account_number || ('••••' + (activeAccount.last4 || '----'))}
         </span>
         {isFrozen && <Tag status="FROZEN">FROZEN</Tag>}
         <ChevronDown size={14} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 120ms ease' }} />
@@ -131,7 +131,7 @@ export function AccountSwitcher({ onOpenNewAccount, className = '' }) {
                         {acc.account_type}
                       </div>
                       <div className="tabular-nums" style={{ fontSize: '12px', color: 'var(--ink-3)' }}>
-                        •••• {acc.last4 || (acc.account_number ? acc.account_number.slice(-4) : '----')}
+                        {acc.account_number || ('•••• ' + (acc.last4 || '----'))}
                       </div>
                     </div>
                   </div>

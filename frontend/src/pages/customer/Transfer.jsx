@@ -381,17 +381,9 @@ export function Transfer() {
           </span>
         </div>
 
-        {/* ─── TWO-COLUMN WORKBENCH (7 cols form / 5 cols sticky slip) ──── */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(12, 1fr)',
-            gap: '32px',
-            alignItems: 'start'
-          }}
-        >
-          {/* LEFT COLUMN: FORM OR REVIEW (7 cols on desktop) */}
-          <div className="mf-transfer-left-col">
+        {/* ─── SINGLE WORKBENCH (Clean centered layout) ──── */}
+        <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+          <div>
             {reviewError && <Banner variant="error" style={{ marginBottom: '20px' }}>{reviewError}</Banner>}
 
             {/* ═════════════════════════════════════════════════════════════ */}
@@ -460,8 +452,8 @@ export function Transfer() {
                       <div style={{ fontWeight: 600, fontSize: '15px' }}>
                         {activeAccount?.account_type || 'SAVINGS'} ACCOUNT
                       </div>
-                      <div className="mf-mono" style={{ fontSize: '14px', color: 'var(--ink-2)' }}>
-                        {activeAccount?.account_number_masked || '•••• •••• ••••'}
+                      <div className="mf-mono" style={{ fontSize: '14px', color: 'var(--ink)' }}>
+                        {activeAccount?.account_number || activeAccount?.account_number_masked || '•••• •••• ••••'}
                       </div>
                     </div>
 
@@ -533,7 +525,7 @@ export function Transfer() {
                                   <div>
                                     <div style={{ fontWeight: 600, fontSize: '14px' }}>{p.name}</div>
                                     <div className="mf-mono" style={{ fontSize: '12px', color: 'var(--ink-2)' }}>
-                                      {maskAccountNumber(p.account_number)} · {p.ifsc}
+                                      {p.account_number} · {p.ifsc}
                                     </div>
                                   </div>
                                 </div>
@@ -718,59 +710,6 @@ export function Transfer() {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* RIGHT COLUMN: STICKY LIVE TRANSFER SLIP (5 cols on desktop) */}
-          <div
-            style={{
-              position: 'sticky',
-              top: '80px'
-            }}
-            className="mf-transfer-right-col"
-          >
-            <Slip
-              title="Transfer slip"
-              subtitle="Draft live preview"
-              stamp={{ text: 'DRAFT', variant: 'gold' }}
-              rows={[
-                {
-                  label: 'From',
-                  value: `${activeAccount?.account_type || 'Savings'} ${activeAccount?.account_number_masked || '••••0001'}`
-                },
-                {
-                  label: 'To',
-                  value: targetName !== '—' ? `${targetName} (${targetAccount})` : '—',
-                  mono: false
-                },
-                {
-                  label: 'Amount',
-                  value: numAmount > 0 ? formatMoney(numAmount) : '₹0.00',
-                  mono: true
-                },
-                {
-                  label: 'Mode',
-                  value: mode || '—'
-                },
-                {
-                  label: 'Date',
-                  value: 'Today'
-                }
-              ]}
-            >
-              <div
-                style={{
-                  backgroundColor: 'var(--paper-2)',
-                  padding: '12px',
-                  marginTop: '16px',
-                  border: '1px solid var(--line)',
-                  fontSize: '12px',
-                  color: 'var(--ink-2)',
-                  lineHeight: '18px'
-                }}
-              >
-                Immutable ledger transaction. Money will move atomically via stored procedure <code>sp_transfer</code>.
-              </div>
-            </Slip>
           </div>
         </div>
 

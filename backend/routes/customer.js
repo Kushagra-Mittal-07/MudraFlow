@@ -75,6 +75,7 @@ router.get('/dashboard', asyncHandler(async (req, res) => {
   // Format accounts list with masking
   const accountsList = accounts.map(a => ({
     account_id: a.account_id,
+    account_number: a.account_number,
     account_type: a.account_type,
     account_number_masked: maskAccountNumber(a.account_number),
     last4: last4(a.account_number),
@@ -85,6 +86,7 @@ router.get('/dashboard', asyncHandler(async (req, res) => {
   // 2. Selected account card data
   const selectedCard = {
     account_id: selectedAccount.account_id,
+    account_number: selectedAccount.account_number,
     account_type: selectedAccount.account_type,
     status: selectedAccount.status,
     account_number_masked: maskAccountNumber(selectedAccount.account_number),
@@ -206,6 +208,7 @@ router.get('/accounts', asyncHandler(async (req, res) => {
 
   const masked = accounts.map(a => ({
     account_id: a.account_id,
+    account_number: a.account_number,
     account_type: a.account_type,
     account_number_masked: maskAccountNumber(a.account_number),
     last4: last4(a.account_number),

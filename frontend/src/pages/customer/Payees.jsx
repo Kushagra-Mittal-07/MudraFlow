@@ -186,7 +186,7 @@ export function Payees() {
                   {payees.map(p => (
                     <tr key={p.beneficiary_id}>
                       <td style={{ fontWeight: 600 }}>{p.name}</td>
-                      <td className="mf-mono">{maskAccountNumber(p.account_number)}</td>
+                      <td className="mf-mono">{p.account_number}</td>
                       <td className="mf-mono">{p.ifsc}</td>
                       <td className="mf-mono">{formatDate(p.added_on)}</td>
                       <td className="mf-text-right">

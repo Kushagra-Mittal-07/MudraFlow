@@ -117,7 +117,8 @@ export function StaffCustomers() {
     customer_id: c.customer_id,
     full_name: c.full_name,
     email: c.email,
-    account_count: c.account_count || 0
+    account_count: c.account_count || 0,
+    primary_account: c.primary_account || null
   }));
 
   return (
@@ -160,13 +161,13 @@ export function StaffCustomers() {
                   <span style={{ fontWeight: 600, fontSize: '14px', color: isSelected ? 'var(--green-950)' : 'var(--ink)' }}>
                     {item.full_name}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-secondary)' }}>
-                    {item.customer_id}
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 600, color: 'var(--green-900)' }}>
+                    {item.primary_account ? `A/C ${item.primary_account}` : `ID ${item.customer_id}`}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
                   <span style={{ fontSize: '12px', color: 'var(--ink-secondary)' }}>
-                    {item.email}
+                    ID: {item.customer_id} · {item.email}
                   </span>
                   <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--green-900)' }}>
                     {item.account_count} account{item.account_count === 1 ? '' : 's'}
