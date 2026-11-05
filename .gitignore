@@ -3,4 +3,5 @@ node_modules/
 *.log
 .chrome*
 frontend/dist/
+mudraflow_backup.sql
 
