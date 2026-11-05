@@ -53,15 +53,31 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(express.json());
 
+// Safeguard middleware for Vercel serverless rewrites:
+// When Vercel rewrites requests to '/api' or '/server.js', restore req.url from matched path headers
+app.use((req, res, next) => {
+  if (req.url === '/server.js' || req.url === '/api' || req.url === '/api/') {
+    const original = req.headers['x-matched-path'] || req.headers['x-vercel-matched-path'] || req.headers['x-forwarded-uri'];
+    if (original && original !== '/server.js' && original !== '/api' && original !== '/api/') {
+      req.url = original;
+    }
+  }
+  next();
+});
+
+// Health check endpoints for deployment verification
+app.get(['/api/health', '/health'], (req, res) => {
+  res.json({ ok: true, status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+app.get(['/', '/api'], (req, res) => {
+  res.json({ ok: true, message: 'MudraFlow API is running', timestamp: new Date().toISOString() });
+});
+
 // Routes mounted under /api
 app.use('/api', authRoutes);
 app.use('/api', staffRoutes);
 app.use('/api', customerRoutes);
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true, status: 'healthy', timestamp: new Date().toISOString() });
-});
 
 // 404 Handler for undefined API routes
 app.use('/api', (req, res) => {
@@ -123,8 +139,8 @@ app.use((err, req, res, next) => {
   return res.status(status).json({ ok: false, message });
 });
 
-// Only listen if not imported by test runner
-if (require.main === module) {
+// Only listen when running directly on localhost (not inside Vercel serverless functions)
+if (require.main === module && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`MudraFlow API server running on port ${PORT}`);
   });
