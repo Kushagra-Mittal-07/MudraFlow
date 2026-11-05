@@ -14,8 +14,43 @@ const staffRoutes = require('./routes/staff');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// =============================================================================
+// CORS Configuration
+// Allows frontend origin, Vercel preview domains, and local dev environments
+// =============================================================================
+const allowedOrigins = [
+  'https://mudra-flow-84bhol19y-duo-rangers.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173'
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL.trim().replace(/\/+$/, ''));
+}
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser requests or same-origin requests (e.g., Postman, health checks)
+    if (!origin) return callback(null, true);
+
+    // Allow explicitly configured origins or any *.vercel.app deployment preview domain
+    if (
+      allowedOrigins.includes(origin) ||
+      /\.vercel\.app$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Origin ${origin} not allowed by CORS`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false // MudraFlow uses JWT Bearer tokens in headers, not session cookies
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Routes mounted under /api
