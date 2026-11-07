@@ -114,8 +114,13 @@ class Database:
                 user=self.user,
                 password=self.password,
                 database=self.database,
+                charset='utf8mb4',
+                collation='utf8mb4_unicode_ci',
                 autocommit=True
             )
+            cur = self.conn.cursor()
+            cur.execute("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;")
+            cur.close()
             return True, "Connected successfully."
         except Exception as e:
             # Check if database doesn't exist
@@ -341,8 +346,28 @@ def execute_transfer(cust_id, sender_acc):
     print(f"From Account: {sender_acc['account_number']} (Balance: {format_money(sender_acc['balance'])})")
 
     to_acc = input("Receiver Account Number (10 digits): ").strip()
-    to_ifsc = input("Receiver IFSC (e.g. MUDF0000483 or MUDF0000101): ").strip().upper()
-    rcvr_name = input("Receiver Beneficiary Name: ").strip()
+
+    # Friendly lookup for MudraFlow accounts
+    rec_info = db.execute_one(
+        """
+        SELECT a.account_number, c.full_name, b.ifsc, b.branch_name 
+        FROM account a 
+        JOIN customer c ON a.customer_id = c.customer_id 
+        JOIN branch b ON a.branch_id = b.branch_id 
+        WHERE a.account_number = %s;
+        """,
+        (to_acc,)
+    )
+
+    if rec_info:
+        default_ifsc = rec_info['ifsc']
+        default_name = rec_info['full_name']
+        print(f"  {Color.GREEN}→ Found MudraFlow Account: {default_name} ({rec_info['branch_name']}){Color.RESET}")
+        to_ifsc = input(f"Receiver IFSC [Press Enter for {default_ifsc}]: ").strip().upper() or default_ifsc
+        rcvr_name = input(f"Receiver Beneficiary Name [Press Enter for {default_name}]: ").strip() or default_name
+    else:
+        to_ifsc = input("Receiver IFSC (e.g. MUDF0000482 or MUDF0000483): ").strip().upper()
+        rcvr_name = input("Receiver Beneficiary Name: ").strip()
     amount = float(input("Amount to Transfer (₹): ").strip() or "0")
 
     if amount <= 0:
@@ -718,7 +743,8 @@ def run_concurrency_demo():
             try:
                 # Open separate connection for true session concurrency
                 t_conn = mysql.connector.connect(
-                    host=db.host, port=db.port, user=db.user, password=db.password, database=db.database
+                    host=db.host, port=db.port, user=db.user, password=db.password, database=db.database,
+                    charset='utf8mb4', collation='utf8mb4_unicode_ci'
                 )
                 t_cur = t_conn.cursor()
                 t_cur.execute(
@@ -840,6 +866,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except (KeyboardInterrupt, EOFError):
-        print(f"\n\n{Color.GOLD}Application closed. Goodbye!{Color.RESET}\n")
+    except KeyboardInterrupt:
+        print(f"\n\n{Color.GOLD}Application terminated by user. Goodbye!{Color.RESET}\n")
         sys.exit(0)
+
