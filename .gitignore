@@ -5,4 +5,7 @@ node_modules/
 frontend/dist/
 mudraflow_backup.sql
 mudraflow_import.sql
+__pycache__/
+*.pyc
+scratch/
 
